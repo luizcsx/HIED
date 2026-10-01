@@ -52,7 +52,7 @@ OBJS     := $(patsubst $(SOURCES)/%.c,$(BUILD)/%.o,$(CFILES)) \
 all: $(TARGET).nds
 
 $(TARGET).nds: $(BUILD)/$(TARGET).elf $(GAME_ICON)
-	ndstool -c $@ -9 $< $(ARM7ARG) -b $(GAME_ICON) "$(GAME_TITLE);$(GAME_SUBTITLE1);$(GAME_SUBTITLE2)"
+	LC_ALL=C.UTF-8 ndstool -c $@ -9 $< $(ARM7ARG) -b $(GAME_ICON) "$(GAME_TITLE);$(GAME_SUBTITLE1);$(GAME_SUBTITLE2)"
 
 $(BUILD)/$(TARGET).elf: $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) $(LIBS) -o $@
