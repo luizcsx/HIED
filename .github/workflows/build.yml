@@ -42,6 +42,10 @@ jobs:
         continue-on-error: true
         run: make variantes
 
+      - name: Gerar ROM de teste sem boot
+        continue-on-error: true
+        run: make sem-boot
+
       - name: Onde ficou o ROM?
         if: always()
         shell: bash
@@ -50,6 +54,9 @@ jobs:
           ls -la
           echo "--- .nds e .elf encontrados:"
           find . -type f \( -name "*.nds" -o -name "*.elf" \) -not -path "./.git/*" || true
+          echo "--- Tamanho do programa ARM9:"
+          "$DEVKITARM/bin/arm-none-eabi-size" build/*.elf || true
+          ls -la *.nds || true
           echo "--- TARGET e BUILD no Makefile:"
           grep -nE '^(TARGET|BUILD)\b' Makefile || true
 
