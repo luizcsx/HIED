@@ -11,24 +11,49 @@ jobs:
     container: devkitpro/devkitarm:latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Baixar o código
+        uses: actions/checkout@v4
 
-      - name: Instalar libnds, grit e ndstool (só se faltar)
-        continue-on-error: true
+      - name: Garantir libnds, grit e ndstool
+        shell: bash
         run: |
-          for i in 1 2 3; do
-            dkp-pacman -S --needed --noconfirm nds-dev && break
-            echo "Tentativa $i falhou, aguardando..."; sleep 20
-          done
-
-      - name: Conferir ferramentas
-        run: |
+          if command -v grit >/dev/null && command -v ndstool >/dev/null && [ -d /opt/devkitpro/libnds ]; then
+            echo "Ferramentas já presentes na imagem."
+          else
+            for i in 1 2 3; do
+              dkp-pacman -S --needed --noconfirm nds-dev && break
+              echo "Tentativa $i falhou; aguardando 20 s..."
+              sleep 20
+            done
+          fi
           which grit ndstool
           ls /opt/devkitpro/libnds /opt/devkitpro/calico
+
+      - name: Compilar
+        run: make
+
+      - name: Onde ficou o ROM?
+        if: always()
+        shell: bash
+        run: |
+          echo "Pasta atual: $(pwd)"
+          ls -la
+          echo "--- .nds e .elf encontrados:"
+          find . -type f \( -name "*.nds" -o -name "*.elf" \) -not -path "./.git/*" || true
+          echo "--- TARGET e BUILD no Makefile:"
+          grep -nE '^(TARGET|BUILD)\b' Makefile || true
+
+      - name: Conferir que existe um ROM
+        shell: bash
+        run: |
+          if ! find . -type f -name "*.nds" -not -path "./.git/*" | grep -q .; then
+            echo "::error::O make terminou, mas nenhum .nds foi gerado. Veja o passo 'Onde ficou o ROM?' e o log do passo 'Compilar'."
+            exit 1
+          fi
 
       - name: Guardar o ROM
         uses: actions/upload-artifact@v4
         with:
           name: rom-nds
-          path: "*.nds"
+          path: "**/*.nds"
           if-no-files-found: error
