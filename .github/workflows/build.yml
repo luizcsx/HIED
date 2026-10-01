@@ -38,6 +38,10 @@ jobs:
       - name: Compilar
         run: make
 
+      - name: Gerar ROMs de teste (um por ARM7)
+        continue-on-error: true
+        run: make variantes
+
       - name: Onde ficou o ROM?
         if: always()
         shell: bash
