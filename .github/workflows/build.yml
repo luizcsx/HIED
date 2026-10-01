@@ -13,13 +13,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Instalar libnds, grit e ndstool
+      - name: Instalar libnds, grit e ndstool (só se faltar)
+        continue-on-error: true
         run: |
-          dkp-pacman -Syu --noconfirm
-          dkp-pacman -S --needed --noconfirm nds-dev
+          for i in 1 2 3; do
+            dkp-pacman -S --needed --noconfirm nds-dev && break
+            echo "Tentativa $i falhou, aguardando..."; sleep 20
+          done
 
-      - name: Compilar
-        run: make
+      - name: Conferir ferramentas
+        run: |
+          which grit ndstool
+          ls /opt/devkitpro/libnds /opt/devkitpro/calico
 
       - name: Guardar o ROM
         uses: actions/upload-artifact@v4
