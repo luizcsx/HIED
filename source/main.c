@@ -1,7 +1,7 @@
 #include <nds.h>
 
-#include "titletop.h"
-#include "titlebottom.h"
+#include "HIED_screen.h"
+#include "HIED_screenB.h"
 
 typedef enum {
     ESTADO_TITULO,
@@ -9,10 +9,10 @@ typedef enum {
     ESTADO_FADE_IN
 } Estado;
 
-#define FADE_MIN      (-16)  // preto total
-#define FADE_MAX      0      // imagem normal
-#define FADE_PASSO    2      // quadros por degrau (maior = mais lento)
-#define FADE_PAUSA    30     // quadros no preto antes de voltar
+#define FADE_MIN      (-16) 
+#define FADE_MAX      0
+#define FADE_PASSO    2
+#define FADE_PAUSA    30
 
 static int bgTopo;
 static int bgBaixo;
@@ -30,11 +30,11 @@ static void iniciar_video(void)
     bgTopo  = bgInit(3,    BgType_Bmp8, BgSize_B8_256x256, 0, 0);
     bgBaixo = bgInitSub(3, BgType_Bmp8, BgSize_B8_256x256, 0, 0);
 
-    dmaCopy(titletopBitmap, bgGetGfxPtr(bgTopo), titletopBitmapLen);
-    dmaCopy(titletopPal, BG_PALETTE, titletopPalLen);
-
-    dmaCopy(titlebottomBitmap, bgGetGfxPtr(bgBaixo), titlebottomBitmapLen);
-    dmaCopy(titlebottomPal, BG_PALETTE_SUB, titlebottomPalLen);
+    dmaCopy(HIED_screenBitmap,  bgGetGfxPtr(bgTopo), HIED_screenBitmapLen);
+    dmaCopy(HIED_screenPal,     BG_PALETTE,          HIED_screenPalLen);
+    
+    dmaCopy(HIED_screenBBitmap, bgGetGfxPtr(bgBaixo), HIED_screenBBitmapLen);
+    dmaCopy(HIED_screenBPal,    BG_PALETTE_SUB,       HIED_screenBPalLen);
 }
 
 int main(void)
