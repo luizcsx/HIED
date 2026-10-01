@@ -1,21 +1,47 @@
 #include <nds.h>
+#include <stdbool.h>
 
+#include "Boot_screen.h"
+#include "Boot_screenB.h"
 #include "HIED_screen.h"
 #include "HIED_screenB.h"
 
+typedef struct {
+    const void *bitmap;
+    u32         bitmapLen;
+    const void *pal;
+    u32         palLen;
+} Imagem;
+
+#define IMAGEM(nome) { nome##Bitmap, nome##BitmapLen, nome##Pal, nome##PalLen }
+
+static const Imagem BOOT_TOPO    = IMAGEM(HIED_boot);
+static const Imagem BOOT_BAIXO   = IMAGEM(HIED_bootB);
+static const Imagem TITULO_TOPO  = IMAGEM(HIED_screen);
+static const Imagem TITULO_BAIXO = IMAGEM(HIED_screenB);
+
 typedef enum {
-    ESTADO_TITULO,
-    ESTADO_FADE_OUT,
-    ESTADO_FADE_IN
+    ESTADO_BOOT_ENTRA,
+    ESTADO_BOOT_ESPERA,
+    ESTADO_BOOT_SAI,
+    ESTADO_TITULO_ENTRA,
+    ESTADO_TITULO_ESPERA,
+    ESTADO_TITULO_SAI,
+    ESTADO_TITULO_PAUSA
 } Estado;
 
-#define FADE_MIN      (-16) 
-#define FADE_MAX      0
-#define FADE_PASSO    2
-#define FADE_PAUSA    30
+#define FADE_MIN      (-16)  // preto total
+#define FADE_MAX      0      // imagem normal
+#define FADE_PASSO    2      // quadros por degrau (maior = mais lento)
+#define FADE_PAUSA    30     // quadros no preto antes de voltar ao título
+#define BOOT_DURACAO  180    // quadros que a boot fica parada (3 s a 60 quadros/s)
+
+#define TECLAS_AVANCAR (KEY_TOUCH | KEY_A | KEY_START)
 
 static int bgTopo;
 static int bgBaixo;
+static int nivel       = FADE_MIN;
+static int quadro_fade = 0;
 
 static void iniciar_video(void)
 {
@@ -30,57 +56,86 @@ static void iniciar_video(void)
     bgTopo  = bgInit(3,    BgType_Bmp8, BgSize_B8_256x256, 0, 0);
     bgBaixo = bgInitSub(3, BgType_Bmp8, BgSize_B8_256x256, 0, 0);
 
-    dmaCopy(HIED_screenBitmap,  bgGetGfxPtr(bgTopo), HIED_screenBitmapLen);
-    dmaCopy(HIED_screenPal,     BG_PALETTE,          HIED_screenPalLen);
-    
-    dmaCopy(HIED_screenBBitmap, bgGetGfxPtr(bgBaixo), HIED_screenBBitmapLen);
-    dmaCopy(HIED_screenBPal,    BG_PALETTE_SUB,       HIED_screenBPalLen);
+    setBrightness(3, nivel);
+}
+
+static void mostrar_telas(const Imagem *topo, const Imagem *baixo)
+{
+    dmaCopy(topo->bitmap, bgGetGfxPtr(bgTopo), topo->bitmapLen);
+    dmaCopy(topo->pal, BG_PALETTE, topo->palLen);
+
+    dmaCopy(baixo->bitmap, bgGetGfxPtr(bgBaixo), baixo->bitmapLen);
+    dmaCopy(baixo->pal, BG_PALETTE_SUB, baixo->palLen);
+}
+
+static bool fade_para(int alvo)
+{
+    if (++quadro_fade >= FADE_PASSO) {
+        quadro_fade = 0;
+        if (nivel < alvo) nivel++;
+        else if (nivel > alvo) nivel--;
+        setBrightness(3, nivel);
+    }
+    return nivel == alvo;
 }
 
 int main(void)
 {
     iniciar_video();
+    mostrar_telas(&BOOT_TOPO, &BOOT_BAIXO);
 
-    Estado estado = ESTADO_TITULO;
-    int nivel  = FADE_MAX;
-    int quadro = 0;
-    int pausa  = 0;
-
-    setBrightness(3, nivel);
+    Estado estado = ESTADO_BOOT_ENTRA;
+    int espera = 0;
 
     while (1) {
         scanKeys();
         u32 apertou = keysDown();
 
         switch (estado) {
-        case ESTADO_TITULO:
-            if (apertou & (KEY_TOUCH | KEY_A | KEY_START)) {
-                estado = ESTADO_FADE_OUT;
-                quadro = 0;
+        case ESTADO_BOOT_ENTRA:
+            if (apertou & TECLAS_AVANCAR) {
+                estado = ESTADO_BOOT_SAI;
+            } else if (fade_para(FADE_MAX)) {
+                estado = ESTADO_BOOT_ESPERA;
+                espera = BOOT_DURACAO;
             }
             break;
 
-        case ESTADO_FADE_OUT:
-            if (++quadro % FADE_PASSO == 0) {
-                nivel--;
-                setBrightness(3, nivel);
-                if (nivel <= FADE_MIN) {
-                    estado = ESTADO_FADE_IN;
-                    pausa  = FADE_PAUSA;
-                    quadro = 0;
-                }
+        case ESTADO_BOOT_ESPERA:
+            if ((apertou & TECLAS_AVANCAR) || --espera <= 0) {
+                estado = ESTADO_BOOT_SAI;
             }
             break;
 
-        case ESTADO_FADE_IN:
-            if (pausa > 0) {
-                pausa--;
-            } else if (++quadro % FADE_PASSO == 0) {
-                nivel++;
-                setBrightness(3, nivel);
-                if (nivel >= FADE_MAX) {
-                    estado = ESTADO_TITULO;
-                }
+        case ESTADO_BOOT_SAI:
+            if (fade_para(FADE_MIN)) {
+                mostrar_telas(&TITULO_TOPO, &TITULO_BAIXO);
+                estado = ESTADO_TITULO_ENTRA;
+            }
+            break;
+
+        case ESTADO_TITULO_ENTRA:
+            if (fade_para(FADE_MAX)) {
+                estado = ESTADO_TITULO_ESPERA;
+            }
+            break;
+
+        case ESTADO_TITULO_ESPERA:
+            if (apertou & TECLAS_AVANCAR) {
+                estado = ESTADO_TITULO_SAI;
+            }
+            break;
+
+        case ESTADO_TITULO_SAI:
+            if (fade_para(FADE_MIN)) {
+                estado = ESTADO_TITULO_PAUSA;
+                espera = FADE_PAUSA;
+            }
+            break;
+
+        case ESTADO_TITULO_PAUSA:
+            if (--espera <= 0) {
+                estado = ESTADO_TITULO_ENTRA;
             }
             break;
         }
