@@ -1,8 +1,10 @@
 #include <nds.h>
 #include <stdbool.h>
 
+#ifndef SEM_BOOT
 #include "Boot_screen.h"
 #include "Boot_screenB.h"
+#endif
 #include "HIED_screen.h"
 #include "HIED_screenB.h"
 
@@ -15,8 +17,10 @@ typedef struct {
 
 #define IMAGEM(nome) { nome##Bitmap, nome##BitmapLen, nome##Pal, nome##PalLen }
 
+#ifndef SEM_BOOT
 static const Imagem BOOT_TOPO    = IMAGEM(Boot_screen);
 static const Imagem BOOT_BAIXO   = IMAGEM(Boot_screenB);
+#endif
 static const Imagem TITULO_TOPO  = IMAGEM(HIED_screen);
 static const Imagem TITULO_BAIXO = IMAGEM(HIED_screenB);
 
@@ -30,11 +34,11 @@ typedef enum {
     ESTADO_TITULO_PAUSA
 } Estado;
 
-#define FADE_MIN      (-16)  // preto total
-#define FADE_MAX      0      // imagem normal
-#define FADE_PASSO    2      // quadros por degrau (maior = mais lento)
-#define FADE_PAUSA    30     // quadros no preto antes de voltar ao título
-#define BOOT_DURACAO  180    // quadros que a boot fica parada (3 s a 60 quadros/s)
+#define FADE_MIN      (-16)
+#define FADE_MAX      0
+#define FADE_PASSO    2
+#define FADE_PAUSA    30
+#define BOOT_DURACAO  180
 
 #define TECLAS_AVANCAR (KEY_TOUCH | KEY_A | KEY_START)
 
@@ -82,9 +86,14 @@ static bool fade_para(int alvo)
 int main(void)
 {
     iniciar_video();
-    mostrar_telas(&BOOT_TOPO, &BOOT_BAIXO);
 
+#ifdef SEM_BOOT
+    mostrar_telas(&TITULO_TOPO, &TITULO_BAIXO);
+    Estado estado = ESTADO_TITULO_ENTRA;
+#else
+    mostrar_telas(&BOOT_TOPO, &BOOT_BAIXO);
     Estado estado = ESTADO_BOOT_ENTRA;
+#endif
     int espera = 0;
 
     while (1) {
