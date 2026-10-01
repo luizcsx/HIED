@@ -30,11 +30,11 @@ typedef enum {
     ESTADO_TITULO_PAUSA
 } Estado;
 
-#define FADE_MIN      (-16)
-#define FADE_MAX      0
-#define FADE_PASSO    2
-#define FADE_PAUSA    30
-#define BOOT_DURACAO  180 
+#define FADE_MIN      (-16)  // preto total
+#define FADE_MAX      0      // imagem normal
+#define FADE_PASSO    2      // quadros por degrau (maior = mais lento)
+#define FADE_PAUSA    30     // quadros no preto antes de voltar ao título
+#define BOOT_DURACAO  180    // quadros que a boot fica parada (3 s a 60 quadros/s)
 
 #define TECLAS_AVANCAR (KEY_TOUCH | KEY_A | KEY_START)
 
