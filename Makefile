@@ -17,12 +17,15 @@ GAME_SUBTITLE2 := Luiz Miguel
 
 CC     := $(DEVKITARM)/bin/arm-none-eabi-gcc
 LIBNDS := $(DEVKITPRO)/libnds
+CALICO := $(DEVKITPRO)/calico
 
 ARCH    := -mthumb -mthumb-interwork
 CFLAGS  := -g -Wall -O2 -march=armv5te -mtune=arm946e-s -fomit-frame-pointer \
-           -ffast-math $(ARCH) -I$(LIBNDS)/include -I$(BUILD) -DARM9
+           -ffast-math $(ARCH) -specs=ds_arm9.specs \
+           -D__NDS__ -D__ARM9__ -DARM9 \
+           -I$(LIBNDS)/include -I$(CALICO)/include -I$(BUILD)
 LDFLAGS := -specs=ds_arm9.specs -g $(ARCH) -Wl,-Map,$(BUILD)/$(TARGET).map
-LIBS    := -L$(LIBNDS)/lib -lnds9
+LIBS    := -L$(LIBNDS)/lib -L$(CALICO)/lib -lnds9 -lcalico_ds9
 
 CFILES   := $(wildcard $(SOURCES)/*.c)
 PNGFILES := $(wildcard $(GFX)/*.png)
