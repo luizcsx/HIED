@@ -13,7 +13,7 @@ GFX     := gfx
 GAME_TITLE     := Heloísa & Isabela
 GAME_SUBTITLE1 := Entrelinhas do Destino
 GAME_SUBTITLE2 := Luiz Miguel
-GAME_ICON      := $(DEVKITPRO)/libnds/icon.bmp
+GAME_ICON      := icon.bmp
 
 CC     := $(DEVKITARM)/bin/arm-none-eabi-gcc
 LIBNDS := $(DEVKITPRO)/libnds
@@ -51,7 +51,7 @@ OBJS     := $(patsubst $(SOURCES)/%.c,$(BUILD)/%.o,$(CFILES)) \
 
 all: $(TARGET).nds
 
-$(TARGET).nds: $(BUILD)/$(TARGET).elf
+$(TARGET).nds: $(BUILD)/$(TARGET).elf $(GAME_ICON)
 	ndstool -c $@ -9 $< $(ARM7ARG) -b $(GAME_ICON) "$(GAME_TITLE);$(GAME_SUBTITLE1);$(GAME_SUBTITLE2)"
 
 $(BUILD)/$(TARGET).elf: $(OBJS)
@@ -63,7 +63,6 @@ $(BUILD)/%.o: $(SOURCES)/%.c $(GFXHDRS) | $(BUILD)
 $(BUILD)/%.o: $(BUILD)/%.s
 	$(CC) $(ARCH) -x assembler-with-cpp -c $< -o $@
 
-# gfx/<nome>.png -> build/<nome>.s + build/<nome>.h (símbolos: <nome>Bitmap, <nome>Pal, ...Len)
 $(BUILD)/%.s $(BUILD)/%.h: $(GFX)/%.png | $(BUILD)
 	grit $< -gb -gB8 -m! -fts -o$(BUILD)/$*
 
