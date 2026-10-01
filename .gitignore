@@ -1,0 +1,9 @@
+build/
+*.nds
+*.elf
+*.map
+*.arm9
+
+.DS_Store
+Thumbs.db
+.vscode/
