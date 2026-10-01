@@ -15,8 +15,8 @@ typedef struct {
 
 #define IMAGEM(nome) { nome##Bitmap, nome##BitmapLen, nome##Pal, nome##PalLen }
 
-static const Imagem BOOT_TOPO    = IMAGEM(HIED_boot);
-static const Imagem BOOT_BAIXO   = IMAGEM(HIED_bootB);
+static const Imagem BOOT_TOPO    = IMAGEM(Boot_screen);
+static const Imagem BOOT_BAIXO   = IMAGEM(Boot_screenB);
 static const Imagem TITULO_TOPO  = IMAGEM(HIED_screen);
 static const Imagem TITULO_BAIXO = IMAGEM(HIED_screenB);
 
