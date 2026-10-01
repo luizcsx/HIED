@@ -32,6 +32,7 @@ $(error Nenhum ARM7 padrao encontrado. Instale o pacote do ARM7 (provavelmente: 
 endif
 $(info ARM7 padrao: $(ARM7ELF))
 ARM7ARG := -7 $(ARM7ELF)
+ARM7_TODOS := $(shell find $(DEVKITPRO) -type f \( -name 'ds7*.elf' -o -name 'default.elf' -o -name '*arm7*.elf' \) 2>/dev/null | sort)
 
 ARCH    := -march=armv5te -mtune=arm946e-s
 CFLAGS  := -g -Wall -O2 -fomit-frame-pointer -ffast-math $(ARCH) \
@@ -47,7 +48,7 @@ OBJS     := $(patsubst $(SOURCES)/%.c,$(BUILD)/%.o,$(CFILES)) \
             $(patsubst $(GFX)/%.png,$(BUILD)/%.o,$(PNGFILES))
 
 .SECONDARY:
-.PHONY: all clean
+.PHONY: all clean variantes
 
 all: $(TARGET).nds
 
@@ -63,11 +64,21 @@ $(BUILD)/%.o: $(SOURCES)/%.c $(GFXHDRS) | $(BUILD)
 $(BUILD)/%.o: $(BUILD)/%.s
 	$(CC) $(ARCH) -x assembler-with-cpp -c $< -o $@
 
+# gfx/<nome>.png -> build/<nome>.s + build/<nome>.h (símbolos: <nome>Bitmap, <nome>Pal, ...Len)
 $(BUILD)/%.s $(BUILD)/%.h: $(GFX)/%.png | $(BUILD)
 	grit $< -gb -gB8 -m! -fts -o$(BUILD)/$*
 
 $(BUILD):
 	mkdir -p $@
+
+variantes: $(BUILD)/$(TARGET).elf $(GAME_ICON)
+	@mkdir -p $(BUILD)/variantes
+	@for a in $(ARM7_TODOS); do \
+	  n=$$(basename $$a .elf); \
+	  echo "ROM de teste com o ARM7 $$n"; \
+	  LC_ALL=C.UTF-8 ndstool -c $(BUILD)/variantes/$(TARGET)_$$n.nds -9 $< -7 $$a -b $(GAME_ICON) "$(GAME_TITLE);$(GAME_SUBTITLE1);$(GAME_SUBTITLE2)" || true; \
+	done
+	@ls -la $(BUILD)/variantes
 
 clean:
 	rm -rf $(BUILD) $(TARGET).nds
