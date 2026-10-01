@@ -29,5 +29,6 @@ jobs:
       - name: Guardar o ROM
         uses: actions/upload-artifact@v4
         with:
-          name: hi-entrelinhas-nds
-          path: hi-entrelinhas.nds
+          name: rom-nds
+          path: "*.nds"
+          if-no-files-found: error
