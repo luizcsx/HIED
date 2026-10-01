@@ -28,6 +28,8 @@ jobs:
           fi
           which grit ndstool
           ls /opt/devkitpro/libnds /opt/devkitpro/calico
+          echo "--- specs e ARM7 disponíveis:"
+          find /opt/devkitpro \( -name "*.specs" -o -name "ds7*.elf" -o -name "default.elf" \) 2>/dev/null || true
 
       - name: Compilar
         run: make
