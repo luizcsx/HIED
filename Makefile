@@ -21,11 +21,17 @@ CALICO := $(DEVKITPRO)/calico
 
 SPECS := $(CALICO)/share/ds9.specs
 ifeq ($(wildcard $(SPECS)),)
-$(error Nao foi encontrado $(SPECS). Rode: find $(DEVKITPRO) -name "*.specs")
+$(error Nao achei $(SPECS). Rode: find $(DEVKITPRO) -name "*.specs")
 endif
 
-ARM7ELF := $(firstword $(wildcard $(CALICO)/bin/ds7_maxmod.elf $(CALICO)/bin/ds7_nomaxmod.elf $(LIBNDS)/default.elf))
-ARM7ARG := $(if $(ARM7ELF),-7 $(ARM7ELF),)
+ARM7ELF := $(firstword \
+    $(wildcard $(CALICO)/bin/ds7_maxmod.elf $(CALICO)/bin/ds7_nomaxmod.elf $(LIBNDS)/default.elf) \
+    $(shell find $(DEVKITPRO) -type f \( -name 'ds7*.elf' -o -name 'default.elf' -o -name '*arm7*.elf' \) 2>/dev/null | sort))
+ifeq ($(strip $(ARM7ELF)),)
+$(error Nenhum ARM7 padrao encontrado. Instale o pacote do ARM7 (provavelmente: dkp-pacman -S default-arm7) ou rode: find $(DEVKITPRO) -name "*.elf")
+endif
+$(info ARM7 padrao: $(ARM7ELF))
+ARM7ARG := -7 $(ARM7ELF)
 
 ARCH    := -march=armv5te -mtune=arm946e-s
 CFLAGS  := -g -Wall -O2 -fomit-frame-pointer -ffast-math $(ARCH) \
