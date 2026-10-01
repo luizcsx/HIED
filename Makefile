@@ -43,12 +43,16 @@ LIBS    := -L$(LIBNDS)/lib -L$(CALICO)/lib -lnds9 -lcalico_ds9
 
 CFILES   := $(wildcard $(SOURCES)/*.c)
 PNGFILES := $(wildcard $(GFX)/*.png)
+ifdef SEM_BOOT
+PNGFILES := $(filter-out $(GFX)/Boot_%,$(PNGFILES))
+CFLAGS   += -DSEM_BOOT
+endif
 GFXHDRS  := $(patsubst $(GFX)/%.png,$(BUILD)/%.h,$(PNGFILES))
 OBJS     := $(patsubst $(SOURCES)/%.c,$(BUILD)/%.o,$(CFILES)) \
             $(patsubst $(GFX)/%.png,$(BUILD)/%.o,$(PNGFILES))
 
 .SECONDARY:
-.PHONY: all clean variantes
+.PHONY: all clean variantes sem-boot
 
 all: $(TARGET).nds
 
@@ -64,7 +68,6 @@ $(BUILD)/%.o: $(SOURCES)/%.c $(GFXHDRS) | $(BUILD)
 $(BUILD)/%.o: $(BUILD)/%.s
 	$(CC) $(ARCH) -x assembler-with-cpp -c $< -o $@
 
-# gfx/<nome>.png -> build/<nome>.s + build/<nome>.h (símbolos: <nome>Bitmap, <nome>Pal, ...Len)
 $(BUILD)/%.s $(BUILD)/%.h: $(GFX)/%.png | $(BUILD)
 	grit $< -gb -gB8 -m! -fts -o$(BUILD)/$*
 
@@ -80,5 +83,8 @@ variantes: $(BUILD)/$(TARGET).elf $(GAME_ICON)
 	done
 	@ls -la $(BUILD)/variantes
 
+sem-boot:
+	$(MAKE) BUILD=build_semboot TARGET=hi-entrelinhas-semboot SEM_BOOT=1
+
 clean:
-	rm -rf $(BUILD) $(TARGET).nds
+	rm -rf $(BUILD) build_semboot $(TARGET).nds hi-entrelinhas-semboot.nds
