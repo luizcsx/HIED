@@ -26,6 +26,10 @@ jobs:
               sleep 20
             done
           fi
+          if ! find /opt/devkitpro -type f \( -name "ds7*.elf" -o -name "default.elf" -o -name "*arm7*.elf" \) 2>/dev/null | grep -q .; then
+            echo "ARM7 padrão não encontrado; tentando instalar default-arm7..."
+            dkp-pacman -S --needed --noconfirm default-arm7 || true
+          fi
           which grit ndstool
           ls /opt/devkitpro/libnds /opt/devkitpro/calico
           echo "--- specs e ARM7 disponíveis:"
