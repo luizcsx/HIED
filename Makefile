@@ -10,7 +10,7 @@ BUILD   := build
 SOURCES := source
 GFX     := gfx
 
-GAME_TITLE     := Heloísa & Isabela
+GAME_TITLE     := HELOISA & ISABELA
 GAME_SUBTITLE1 := Entrelinhas do Destino
 GAME_SUBTITLE2 := Luiz Miguel
 GAME_ICON      := icon.bmp
