@@ -21,16 +21,14 @@ CALICO := $(DEVKITPRO)/calico
 
 SPECS := $(CALICO)/share/ds9.specs
 ifeq ($(wildcard $(SPECS)),)
-$(error Nao achei $(SPECS). Rode: find $(DEVKITPRO) -name "*.specs")
+$(error Nao foi encontrado $(SPECS). Rode: find $(DEVKITPRO) -name "*.specs")
 endif
 
-ARM7ELF := $(firstword \
-    $(wildcard $(CALICO)/bin/ds7_maxmod.elf $(CALICO)/bin/ds7_nomaxmod.elf $(LIBNDS)/default.elf) \
-    $(shell find $(DEVKITPRO) -type f \( -name 'ds7*.elf' -o -name 'default.elf' -o -name '*arm7*.elf' \) 2>/dev/null | sort))
+ARM7ELF := $(firstword $(shell find $(DEVKITPRO) -type f -name 'ds7_sphynx.elf' 2>/dev/null))
 ifeq ($(strip $(ARM7ELF)),)
-$(error Nenhum ARM7 padrao encontrado. Instale o pacote do ARM7 (provavelmente: dkp-pacman -S default-arm7) ou rode: find $(DEVKITPRO) -name "*.elf")
+$(error ds7_sphynx.elf nao encontrado. Rode: find $(DEVKITPRO) -name "*.elf")
 endif
-$(info ARM7 padrao: $(ARM7ELF))
+$(info ARM7 fixado: $(ARM7ELF))
 ARM7ARG := -7 $(ARM7ELF)
 ARM7_TODOS := $(shell find $(DEVKITPRO) -type f \( -name 'ds7*.elf' -o -name 'default.elf' -o -name '*arm7*.elf' \) 2>/dev/null | sort)
 
@@ -41,7 +39,7 @@ CFLAGS  := -g -Wall -O2 -fomit-frame-pointer -ffast-math $(ARCH) \
 LDFLAGS := -specs=$(SPECS) -g $(ARCH) -Wl,-Map,$(BUILD)/$(TARGET).map
 LIBS    := -L$(LIBNDS)/lib -L$(CALICO)/lib -lnds9 -lcalico_ds9
 
-CFILES := $(SOURCES)/main.c
+CFILES   := $(wildcard $(SOURCES)/*.c)
 PNGFILES := $(wildcard $(GFX)/*.png)
 ifdef COM_BOOT
 CFLAGS   += -DCOM_BOOT
