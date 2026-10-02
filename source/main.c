@@ -31,14 +31,15 @@ typedef enum {
     ESTADO_TITULO_ENTRA,
     ESTADO_TITULO_ESPERA,
     ESTADO_TITULO_SAI,
-    ESTADO_TITULO_PAUSA 
+    ESTADO_TITULO_PAUSA
 } Estado;
 
 #define FADE_MIN      (-16)
 #define FADE_MAX      0
-#define FADE_PASSO    2 
+#define FADE_PASSO    2
 #define FADE_PAUSA    30
 #define BOOT_DURACAO  180
+
 #define TECLAS_AVANCAR (KEY_A | KEY_START)
 
 static bool tocou(void)
@@ -102,7 +103,11 @@ int main(void)
 #endif
     int espera = 0;
 
+    scanKeys();
+    scanKeys();
+
     while (1) {
+        swiWaitForVBlank();
         scanKeys();
         u32 apertou = keysDown();
 
@@ -154,8 +159,6 @@ int main(void)
             }
             break;
         }
-
-        swiWaitForVBlank();
     }
 
     return 0;
