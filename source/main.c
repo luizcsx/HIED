@@ -15,6 +15,10 @@ typedef struct {
 static const Imagem TITULO_TOPO  = IMAGEM(HIED_screen);
 static const Imagem TITULO_BAIXO = IMAGEM(HIED_screenB);
 
+#define FADE_MIN   (-16)
+#define FADE_MAX   0
+#define FADE_PASSO 2
+
 int main(void) {
     lcdMainOnTop();
 
@@ -33,9 +37,18 @@ int main(void) {
     dmaCopy(TITULO_BAIXO.bitmap, bgGetGfxPtr(bgBaixo), TITULO_BAIXO.bitmapLen);
     dmaCopy(TITULO_BAIXO.pal, BG_PALETTE_SUB, TITULO_BAIXO.palLen);
 
-    setBrightness(3, 0);
+    int nivel = FADE_MIN;
+    int quadro = 0;
+    setBrightness(3, nivel);
 
     while (1) {
+        if (nivel < FADE_MAX) {
+            if (++quadro >= FADE_PASSO) {
+                quadro = 0;
+                nivel++;
+                setBrightness(3, nivel);
+            }
+        }
         swiWaitForVBlank();
     }
 
