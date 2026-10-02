@@ -1,10 +1,6 @@
 #include <nds.h>
 #include <stdbool.h>
 
-#ifdef COM_BOOT
-#include "Boot_screen.h"
-#include "Boot_screenB.h"
-#endif
 #include "HIED_screen.h"
 #include "HIED_screenB.h"
 
@@ -17,37 +13,22 @@ typedef struct {
 
 #define IMAGEM(nome) { nome##Bitmap, nome##BitmapLen, nome##Pal, nome##PalLen }
 
-#ifdef COM_BOOT
-static const Imagem BOOT_TOPO    = IMAGEM(Boot_screen);
-static const Imagem BOOT_BAIXO   = IMAGEM(Boot_screenB);
-#endif
 static const Imagem TITULO_TOPO  = IMAGEM(HIED_screen);
 static const Imagem TITULO_BAIXO = IMAGEM(HIED_screenB);
 
 typedef enum {
-    ESTADO_BOOT_ENTRA,
-    ESTADO_BOOT_ESPERA,
-    ESTADO_BOOT_SAI,
     ESTADO_TITULO_ENTRA,
     ESTADO_TITULO_ESPERA,
     ESTADO_TITULO_SAI,
     ESTADO_TITULO_PAUSA
 } Estado;
 
-#define FADE_MIN      (-16)
-#define FADE_MAX      0
-#define FADE_PASSO    2
-#define FADE_PAUSA    30
-#define BOOT_DURACAO  180
+#define FADE_MIN   (-16)
+#define FADE_MAX   0
+#define FADE_PASSO 2
+#define FADE_PAUSA 30
 
 #define TECLAS_AVANCAR (KEY_A | KEY_START)
-
-static bool tocou(void)
-{
-    touchPosition toque;
-    touchRead(&toque);
-    return (keysHeld() & KEY_TOUCH) && toque.px != 0 && toque.py != 0;
-}
 
 static int bgTopo;
 static int bgBaixo;
@@ -90,17 +71,19 @@ static bool fade_para(int alvo)
     return nivel == alvo;
 }
 
+static bool tocou(void)
+{
+    touchPosition toque;
+    touchRead(&toque);
+    return (keysHeld() & KEY_TOUCH) && toque.px != 0 && toque.py != 0;
+}
+
 int main(void)
 {
     iniciar_video();
-
-#ifdef COM_BOOT
-    mostrar_telas(&BOOT_TOPO, &BOOT_BAIXO);
-    Estado estado = ESTADO_BOOT_ENTRA;
-#else
     mostrar_telas(&TITULO_TOPO, &TITULO_BAIXO);
+
     Estado estado = ESTADO_TITULO_ENTRA;
-#endif
     int espera = 0;
 
     scanKeys();
@@ -112,28 +95,6 @@ int main(void)
         u32 apertou = keysDown();
 
         switch (estado) {
-        case ESTADO_BOOT_ENTRA:
-            if ((apertou & TECLAS_AVANCAR) || tocou()) {
-                estado = ESTADO_BOOT_SAI;
-            } else if (fade_para(FADE_MAX)) {
-                estado = ESTADO_BOOT_ESPERA;
-                espera = BOOT_DURACAO;
-            }
-            break;
-
-        case ESTADO_BOOT_ESPERA:
-            if ((apertou & TECLAS_AVANCAR) || tocou() || --espera <= 0) {
-                estado = ESTADO_BOOT_SAI;
-            }
-            break;
-
-        case ESTADO_BOOT_SAI:
-            if (fade_para(FADE_MIN)) {
-                mostrar_telas(&TITULO_TOPO, &TITULO_BAIXO);
-                estado = ESTADO_TITULO_ENTRA;
-            }
-            break;
-
         case ESTADO_TITULO_ENTRA:
             if (fade_para(FADE_MAX)) {
                 estado = ESTADO_TITULO_ESPERA;
