@@ -38,14 +38,6 @@ jobs:
       - name: Compilar
         run: make
 
-      - name: Gerar ROMs de teste (um por ARM7)
-        continue-on-error: true
-        run: make variantes
-
-      - name: Gerar ROM de teste com boot
-        continue-on-error: true
-        run: make com-boot
-
       - name: Onde ficou o ROM?
         if: always()
         shell: bash
