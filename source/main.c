@@ -1,7 +1,7 @@
 #include <nds.h>
 #include <stdbool.h>
 
-#ifndef SEM_BOOT
+#ifdef COM_BOOT
 #include "Boot_screen.h"
 #include "Boot_screenB.h"
 #endif
@@ -17,7 +17,7 @@ typedef struct {
 
 #define IMAGEM(nome) { nome##Bitmap, nome##BitmapLen, nome##Pal, nome##PalLen }
 
-#ifndef SEM_BOOT
+#ifdef COM_BOOT
 static const Imagem BOOT_TOPO    = IMAGEM(Boot_screen);
 static const Imagem BOOT_BAIXO   = IMAGEM(Boot_screenB);
 #endif
@@ -87,12 +87,12 @@ int main(void)
 {
     iniciar_video();
 
-#ifdef SEM_BOOT
-    mostrar_telas(&TITULO_TOPO, &TITULO_BAIXO);
-    Estado estado = ESTADO_TITULO_ENTRA;
-#else
+#ifdef COM_BOOT
     mostrar_telas(&BOOT_TOPO, &BOOT_BAIXO);
     Estado estado = ESTADO_BOOT_ENTRA;
+#else
+    mostrar_telas(&TITULO_TOPO, &TITULO_BAIXO);
+    Estado estado = ESTADO_TITULO_ENTRA;
 #endif
     int espera = 0;
 
