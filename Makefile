@@ -41,7 +41,7 @@ CFLAGS  := -g -Wall -O2 -fomit-frame-pointer -ffast-math $(ARCH) \
 LDFLAGS := -specs=$(SPECS) -g $(ARCH) -Wl,-Map,$(BUILD)/$(TARGET).map
 LIBS    := -L$(LIBNDS)/lib -L$(CALICO)/lib -lnds9 -lcalico_ds9
 
-CFILES   := $(wildcard $(SOURCES)/*.c)
+CFILES := $(SOURCES)/main_teste_cor.c
 PNGFILES := $(wildcard $(GFX)/*.png)
 ifdef COM_BOOT
 CFLAGS   += -DCOM_BOOT
