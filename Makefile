@@ -43,16 +43,17 @@ LIBS    := -L$(LIBNDS)/lib -L$(CALICO)/lib -lnds9 -lcalico_ds9
 
 CFILES   := $(wildcard $(SOURCES)/*.c)
 PNGFILES := $(wildcard $(GFX)/*.png)
-ifdef SEM_BOOT
+ifdef COM_BOOT
+CFLAGS   += -DCOM_BOOT
+else
 PNGFILES := $(filter-out $(GFX)/Boot_%,$(PNGFILES))
-CFLAGS   += -DSEM_BOOT
 endif
 GFXHDRS  := $(patsubst $(GFX)/%.png,$(BUILD)/%.h,$(PNGFILES))
 OBJS     := $(patsubst $(SOURCES)/%.c,$(BUILD)/%.o,$(CFILES)) \
             $(patsubst $(GFX)/%.png,$(BUILD)/%.o,$(PNGFILES))
 
 .SECONDARY:
-.PHONY: all clean variantes sem-boot
+.PHONY: all clean variantes com-boot
 
 all: $(TARGET).nds
 
@@ -83,8 +84,8 @@ variantes: $(BUILD)/$(TARGET).elf $(GAME_ICON)
 	done
 	@ls -la $(BUILD)/variantes
 
-sem-boot:
-	$(MAKE) BUILD=build_semboot TARGET=hi-entrelinhas-semboot SEM_BOOT=1
+com-boot:
+	$(MAKE) BUILD=build_comboot TARGET=hi-entrelinhas-comboot COM_BOOT=1
 
 clean:
-	rm -rf $(BUILD) build_semboot $(TARGET).nds hi-entrelinhas-semboot.nds
+	rm -rf $(BUILD) build_comboot $(TARGET).nds hi-entrelinhas-comboot.nds
