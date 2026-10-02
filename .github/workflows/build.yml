@@ -42,9 +42,9 @@ jobs:
         continue-on-error: true
         run: make variantes
 
-      - name: Gerar ROM de teste sem boot
+      - name: Gerar ROM de teste com boot
         continue-on-error: true
-        run: make sem-boot
+        run: make com-boot
 
       - name: Onde ficou o ROM?
         if: always()
