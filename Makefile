@@ -1,8 +1,8 @@
 ifeq ($(strip $(DEVKITARM)),)
-$(error Defina DEVKITARM, por exemplo: export DEVKITARM=/opt/devkitpro/devkitARM)
+$(error Defina DEVKITARM)
 endif
 ifeq ($(strip $(DEVKITPRO)),)
-$(error Defina DEVKITPRO, por exemplo: export DEVKITPRO=/opt/devkitpro)
+$(error Defina DEVKITPRO)
 endif
 
 TARGET  := hi-entrelinhas
@@ -21,7 +21,7 @@ CALICO := $(DEVKITPRO)/calico
 
 SPECS := $(CALICO)/share/ds9.specs
 ifeq ($(wildcard $(SPECS)),)
-$(error Nao foi encontrado $(SPECS). Rode: find $(DEVKITPRO) -name "*.specs")
+$(error Nao achei $(SPECS). Rode: find $(DEVKITPRO) -name "*.specs")
 endif
 
 ARM7ELF := $(firstword $(shell find $(DEVKITPRO) -type f -name 'ds7_sphynx.elf' 2>/dev/null))
@@ -41,17 +41,12 @@ LIBS    := -L$(LIBNDS)/lib -L$(CALICO)/lib -lnds9 -lcalico_ds9
 
 CFILES   := $(wildcard $(SOURCES)/*.c)
 PNGFILES := $(wildcard $(GFX)/*.png)
-ifdef COM_BOOT
-CFLAGS   += -DCOM_BOOT
-else
-PNGFILES := $(filter-out $(GFX)/Boot_%,$(PNGFILES))
-endif
 GFXHDRS  := $(patsubst $(GFX)/%.png,$(BUILD)/%.h,$(PNGFILES))
 OBJS     := $(patsubst $(SOURCES)/%.c,$(BUILD)/%.o,$(CFILES)) \
             $(patsubst $(GFX)/%.png,$(BUILD)/%.o,$(PNGFILES))
 
 .SECONDARY:
-.PHONY: all clean variantes com-boot
+.PHONY: all clean variantes
 
 all: $(TARGET).nds
 
@@ -82,8 +77,5 @@ variantes: $(BUILD)/$(TARGET).elf $(GAME_ICON)
 	done
 	@ls -la $(BUILD)/variantes
 
-com-boot:
-	$(MAKE) BUILD=build_comboot TARGET=hi-entrelinhas-comboot COM_BOOT=1
-
 clean:
-	rm -rf $(BUILD) build_comboot $(TARGET).nds hi-entrelinhas-comboot.nds
+	rm -rf $(BUILD) $(TARGET).nds
