@@ -138,7 +138,7 @@ static void desenhar_anel(int cx, int cy, int raio, u8 indice, int espessura)
 
 static void desenhar_botao(int cx, int cy)
 {
-    const u8 *src = (const u8 *)ButtonBitmap;
+    const u8 *src = (const u8 *)Button_templateBitmap;
     for (int y = 0; y < 64; y++) {
         for (int x = 0; x < 64; x++) {
             u8 indice = src[y * 64 + x];
@@ -151,7 +151,7 @@ static void desenhar_botao(int cx, int cy)
 
 static void montar_tela_selecao(int slot_atual)
 {
-    memcpy(telaBaixoBuf, SS_screenBBitmap, sizeof(telaBaixoBuf));
+    memcpy(telaBaixoBuf, SS_screenbgBBitmap, sizeof(telaBaixoBuf));
 
     for (int i = 0; i < 3; i++) {
         desenhar_botao(SLOTS[i].x, SLOTS[i].y);
