@@ -4,8 +4,8 @@
 
 #include "HIED_screen.h"
 #include "HIED_screenB.h"
-#include "SS_screen.h"
-#include "SS_screenB.h"
+#include "SS_screenbg.h"
+#include "SS_screenbgB.h"
 #include "Button.h"
 
 typedef struct {
