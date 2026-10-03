@@ -6,7 +6,7 @@
 #include "HIED_screenB.h"
 #include "SS_screenbg.h"
 #include "SS_screenbgB.h"
-#include "Button.h"
+#include "Button_template.h"
 
 typedef struct {
     const void *bitmap;
