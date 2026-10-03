@@ -19,8 +19,8 @@ typedef struct {
 
 static const Imagem TITULO_TOPO   = IMAGEM(HIED_screen);
 static const Imagem TITULO_BAIXO  = IMAGEM(HIED_screenB);
-static const Imagem SELECAO_TOPO  = IMAGEM(SS_screen);
-static const Imagem SELECAO_BAIXO = IMAGEM(SS_screenB);
+static const Imagem SELECAO_TOPO  = IMAGEM(SS_screenbg);
+static const Imagem SELECAO_BAIXO = IMAGEM(SS_screenbgB);
 
 typedef enum {
     ESTADO_TITULO_ENTRA,
