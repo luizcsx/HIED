@@ -63,7 +63,7 @@ $(BUILD)/%.o: $(BUILD)/%.s
 	$(CC) $(ARCH) -x assembler-with-cpp -c $< -o $@
 
 $(BUILD)/%.s $(BUILD)/%.h: $(GFX)/%.png | $(BUILD)
-	grit $< -gb -gB8 -m! -fts -o$(BUILD)/$*
+	grit $< -gb -gB8 -gT FF00FF -m! -fts -o$(BUILD)/$*
 
 $(BUILD):
 	mkdir -p $@
