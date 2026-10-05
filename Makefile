@@ -9,24 +9,26 @@ TARGET  := hi-entrelinhas
 BUILD   := build
 SOURCES := source
 GFX     := gfx
+FONTS   := fonts
 
 GAME_TITLE     := HELOISA & ISABELA
 GAME_SUBTITLE1 := Entrelinhas do Destino
 GAME_SUBTITLE2 := Luiz Miguel
 GAME_ICON      := icon.bmp
 
-CC     := $(DEVKITARM)/bin/arm-none-eabi-gcc
-LIBNDS := $(DEVKITPRO)/libnds
-CALICO := $(DEVKITPRO)/calico
+CC      := $(DEVKITARM)/bin/arm-none-eabi-gcc
+OBJCOPY := $(DEVKITARM)/bin/arm-none-eabi-objcopy
+LIBNDS  := $(DEVKITPRO)/libnds
+CALICO  := $(DEVKITPRO)/calico
 
 SPECS := $(CALICO)/share/ds9.specs
 ifeq ($(wildcard $(SPECS)),)
-$(error Nao achei $(SPECS). Rode: find $(DEVKITPRO) -name "*.specs")
+$(error Nao achei $(SPECS). Rode: find $(DEVKITPRO) -name \"*.specs\")
 endif
 
 ARM7ELF := $(firstword $(shell find $(DEVKITPRO) -type f -name 'ds7_sphynx.elf' 2>/dev/null))
 ifeq ($(strip $(ARM7ELF)),)
-$(error ds7_sphynx.elf nao encontrado. Rode: find $(DEVKITPRO) -name "*.elf")
+$(error ds7_sphynx.elf nao encontrado. Rode: find $(DEVKITPRO) -name \"*.elf\")
 endif
 $(info ARM7 fixado: $(ARM7ELF))
 ARM7ARG := -7 $(ARM7ELF)
@@ -39,11 +41,14 @@ CFLAGS  := -g -Wall -O2 -fomit-frame-pointer -ffast-math $(ARCH) \
 LDFLAGS := -specs=$(SPECS) -g $(ARCH) -Wl,-Map,$(BUILD)/$(TARGET).map
 LIBS    := -L$(LIBNDS)/lib -L$(CALICO)/lib -lnds9 -lcalico_ds9
 
-CFILES   := $(wildcard $(SOURCES)/*.c)
-PNGFILES := $(wildcard $(GFX)/*.png)
-GFXHDRS  := $(patsubst $(GFX)/%.png,$(BUILD)/%.h,$(PNGFILES))
-OBJS     := $(patsubst $(SOURCES)/%.c,$(BUILD)/%.o,$(CFILES)) \
-            $(patsubst $(GFX)/%.png,$(BUILD)/%.o,$(PNGFILES))
+CFILES    := $(wildcard $(SOURCES)/*.c)
+PNGFILES  := $(wildcard $(GFX)/*.png)
+FONTFILES := $(wildcard $(FONTS)/*.NFTR)
+GFXHDRS   := $(patsubst $(GFX)/%.png,$(BUILD)/%.h,$(PNGFILES))
+FONTOBJS  := $(patsubst $(FONTS)/%.NFTR,$(BUILD)/%.nftr.o,$(FONTFILES))
+OBJS      := $(patsubst $(SOURCES)/%.c,$(BUILD)/%.o,$(CFILES)) \
+             $(patsubst $(GFX)/%.png,$(BUILD)/%.o,$(PNGFILES)) \
+             $(FONTOBJS)
 
 .SECONDARY:
 .PHONY: all clean variantes
@@ -58,6 +63,9 @@ $(BUILD)/$(TARGET).elf: $(OBJS)
 
 $(BUILD)/%.o: $(SOURCES)/%.c $(GFXHDRS) | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD)/%.nftr.o: $(FONTS)/%.NFTR | $(BUILD)
+	$(OBJCOPY) -I binary -O elf32-littlearm -B arm $< $@
 
 $(BUILD)/%.o: $(BUILD)/%.s
 	$(CC) $(ARCH) -x assembler-with-cpp -c $< -o $@
