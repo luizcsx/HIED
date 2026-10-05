@@ -39,7 +39,8 @@ typedef enum {
 #define TECLAS_ESQUERDA (KEY_LEFT | KEY_UP)
 #define TECLAS_DIREITA  (KEY_RIGHT | KEY_DOWN)
 
-#define COR_CONTORNO 2  /* branco: o índice 1 é o verde do fundo e o anel sumia */
+#define COR_CONTORNO 255
+#define COR_CONTORNO_RGB RGB15(2, 4, 0)  
 
 static int bgTopo;
 static int bgBaixo;
@@ -197,6 +198,7 @@ int main(void)
                 dmaCopy(SELECAO_TOPO.bitmap, bgGetGfxPtr(bgTopo), SELECAO_TOPO.bitmapLen);
                 dmaCopy(SELECAO_TOPO.pal, BG_PALETTE, SELECAO_TOPO.palLen);
                 dmaCopy(SELECAO_BAIXO.pal, BG_PALETTE_SUB, SELECAO_BAIXO.palLen);
+                BG_PALETTE_SUB[COR_CONTORNO] = COR_CONTORNO_RGB;
                 montar_tela_selecao(slot_selecionado);
                 estado = ESTADO_SELECAO_ENTRA;
             }
