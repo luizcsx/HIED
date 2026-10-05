@@ -8,6 +8,10 @@
 #include "SS_screenbgB.h"
 #include "Button_template.h"
 
+extern const u8 _binary_fonts_heloFont_NFTR_start[];
+
+static const u8 *const FONTE = _binary_fonts_heloFont_NFTR_start;
+
 typedef struct {
     const void *bitmap;
     u32         bitmapLen;
@@ -42,12 +46,129 @@ typedef enum {
 #define COR_CONTORNO 255
 #define COR_CONTORNO_RGB RGB15(22, 16, 6)
 
+#define COR_TEXTO_PREENCHIMENTO 16
+#define COR_TEXTO_CONTORNO      2
+
+#define TEXTO_INFERIOR "Duplicar"
+
 static int bgTopo;
 static int bgBaixo;
 static int nivel       = FADE_MIN;
 static int quadro_fade = 0;
 
 static u8 telaBaixoBuf[256 * 192];
+
+static inline void plotar(int x, int y, u8 indice)
+{
+    if ((unsigned)x < 256 && (unsigned)y < 192) {
+        telaBaixoBuf[y * 256 + x] = indice;
+    }
+}
+
+static inline u32 ler32(const u8 *p)
+{
+    return p[0] | (p[1] << 8) | (p[2] << 16) | ((u32)p[3] << 24);
+}
+
+static inline u16 ler16(const u8 *p)
+{
+    return p[0] | (p[1] << 8);
+}
+
+static const u8 *secao_nftr(const u8 *atual)
+{
+    u32 fim = ler32(FONTE + 8);
+    const u8 *s = atual ? atual + ler32(atual + 4) : FONTE + 16;
+    if ((u32)(s - FONTE) >= fim) return 0;
+    return s;
+}
+
+static const u8 *achar_secao(const char *tag)
+{
+    for (const u8 *s = secao_nftr(0); s; s = secao_nftr(s)) {
+        if (memcmp(s, tag, 4) == 0) return s;
+    }
+    return 0;
+}
+
+static int glifo_de(u16 c)
+{
+    for (const u8 *s = secao_nftr(0); s; s = secao_nftr(s)) {
+        if (memcmp(s, "PAMC", 4) != 0) continue;
+        const u8 *d = s + 8;
+        u16 ini = ler16(d);
+        u16 fim = ler16(d + 2);
+        u32 tipo = ler32(d + 4);
+
+        if (tipo == 2) {
+            u16 n = ler16(d + 12);
+            for (u16 k = 0; k < n; k++) {
+                if (ler16(d + 14 + k * 4) == c) return ler16(d + 16 + k * 4);
+            }
+            continue;
+        }
+        if (c < ini || c > fim) continue;
+        if (tipo == 0) return (int)(ler32(d + 12) + (c - ini));
+        if (tipo == 1) {
+            u16 g = ler16(d + 12 + (c - ini) * 2);
+            if (g != 0xFFFF) return g;
+        }
+    }
+    return -1;
+}
+
+static void medidas_glifo(int g, int *esquerda, int *avanco)
+{
+    const u8 *e = achar_secao("HDWC") + 16 + g * 3;
+    *esquerda = (s8)e[0];
+    *avanco   = (s8)e[2];
+}
+
+static int pixel_glifo(int g, int col, int lin)
+{
+    const u8 *pl = achar_secao("PLGC") + 8;
+    int larg = pl[0];
+    int tam  = ler16(pl + 2);
+    const u8 *dados = pl + pl[4];
+    int p = lin * larg + col;
+    u8 byte = dados[g * tam + p / 4];
+    return (byte >> (6 - 2 * (p % 4))) & 3;
+}
+
+static int largura_texto(const char *txt)
+{
+    int total = 0;
+    for (; *txt; txt++) {
+        int g = glifo_de((u8)*txt);
+        if (g < 0) continue;
+        int esquerda, avanco;
+        medidas_glifo(g, &esquerda, &avanco);
+        total += avanco;
+    }
+    return total;
+}
+
+static void desenhar_texto(int x, int y, const char *txt)
+{
+    static const u8 CORES[4] = { 0, COR_TEXTO_PREENCHIMENTO, COR_TEXTO_CONTORNO, 0 };
+    const u8 *pl = achar_secao("PLGC") + 8;
+    int larg = pl[0];
+    int alt  = pl[1];
+
+    for (; *txt; txt++) {
+        int g = glifo_de((u8)*txt);
+        if (g < 0) continue;
+        int esquerda, avanco;
+        medidas_glifo(g, &esquerda, &avanco);
+        for (int lin = 0; lin < alt; lin++) {
+            for (int col = 0; col < larg; col++) {
+                int v = pixel_glifo(g, col, lin);
+                if (v) plotar(x + esquerda + col, y + lin, CORES[v]);
+            }
+        }
+        x += avanco;
+    }
+}
 
 static void iniciar_video(void)
 {
@@ -116,13 +237,6 @@ static int slot_tocado(void)
     return -1;
 }
 
-static inline void plotar(int x, int y, u8 indice)
-{
-    if ((unsigned)x < 256 && (unsigned)y < 192) {
-        telaBaixoBuf[y * 256 + x] = indice;
-    }
-}
-
 static void desenhar_anel(int cx, int cy, int raio, u8 indice, int espessura)
 {
     int r2max = raio * raio;
@@ -160,6 +274,10 @@ static void montar_tela_selecao(int slot_atual)
             desenhar_anel(SLOTS[i].x, SLOTS[i].y, 34, COR_CONTORNO, 2);
         }
     }
+
+    int altura = achar_secao("PLGC")[9];
+    int largura = largura_texto(TEXTO_INFERIOR);
+    desenhar_texto(256 - largura - 8, 192 - altura - 8, TEXTO_INFERIOR);
 
     dmaCopy(telaBaixoBuf, bgGetGfxPtr(bgBaixo), sizeof(telaBaixoBuf));
 }
