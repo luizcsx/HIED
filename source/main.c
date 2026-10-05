@@ -32,8 +32,14 @@ typedef enum {
     ESTADO_TITULO_SAI,
 
     ESTADO_SELECAO_ENTRA,
-    ESTADO_SELECAO_ESPERA
+    ESTADO_SELECAO_ESPERA,
+    ESTADO_SELECAO_SAI
 } Estado;
+
+typedef enum {
+    DESTINO_TITULO,
+    DESTINO_SELECAO
+} Destino;
 
 #define FADE_MIN   (-16)
 #define FADE_MAX   0
@@ -364,6 +370,7 @@ int main(void)
     mostrar_telas(&TITULO_TOPO, &TITULO_BAIXO);
 
     Estado estado = ESTADO_TITULO_ENTRA;
+    Destino destino = DESTINO_TITULO;
     int slot_selecionado = 0;
 
     scanKeys();
@@ -404,10 +411,26 @@ int main(void)
             }
             break;
 
+        case ESTADO_SELECAO_SAI:
+            if (fade_para(FADE_MIN)) {
+                if (destino == DESTINO_TITULO) {
+                    voltar_titulo();
+                    estado = ESTADO_TITULO_ENTRA;
+                } else {
+                    estado = ESTADO_SELECAO_ENTRA;
+                }
+            }
+            break;
+
         case ESTADO_SELECAO_ESPERA: {
             if (apertou & KEY_B) {
-                voltar_titulo();
-                estado = ESTADO_TITULO_ENTRA;
+                destino = DESTINO_TITULO;
+                estado = ESTADO_SELECAO_SAI;
+                break;
+            }
+            if (apertou & KEY_A) {
+                destino = DESTINO_SELECAO;
+                estado = ESTADO_SELECAO_SAI;
                 break;
             }
 
