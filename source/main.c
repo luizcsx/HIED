@@ -25,6 +25,7 @@ static const Imagem TITULO_TOPO   = IMAGEM(HIED_screen);
 static const Imagem TITULO_BAIXO  = IMAGEM(HIED_screenB);
 static const Imagem SELECAO_TOPO  = IMAGEM(SS_screenbg);
 static const Imagem SELECAO_BAIXO = IMAGEM(SS_screenbgB);
+static const Imagem SELECAO_EXCLUIR = IMAGEM(SS_screenbg_selXbtn);
 
 typedef enum {
     ESTADO_TITULO_ENTRA,
@@ -51,6 +52,9 @@ typedef enum {
 
 #define COR_CONTORNO 255
 #define COR_CONTORNO_RGB RGB15(22, 16, 6)
+#define COR_CONTORNO_EXCLUIR_RGB RGB15(15, 5, 5)
+#define RODAPE_DESCIDA 40
+#define RODAPE_PASSO 4
 
 #define COR_TEXTO_PREENCHIMENTO 16
 #define COR_TEXTO_CONTORNO      2
@@ -99,6 +103,9 @@ static int bgTopo;
 static int bgBaixo;
 static int nivel       = FADE_MIN;
 static int quadro_fade = 0;
+static bool modo_excluir = false;
+static int rodape_dy = 0;
+static int rodape_alvo = 0;
 
 static u8 telaBaixoBuf[256 * 192];
 
@@ -323,11 +330,19 @@ static void desenhar_icone(int x, int y, const u8 *icone)
 
 static void aplicar_paleta_selecao(void)
 {
-    BG_PALETTE_SUB[COR_CONTORNO] = COR_CONTORNO_RGB;
+    BG_PALETTE_SUB[COR_CONTORNO] = modo_excluir ? COR_CONTORNO_EXCLUIR_RGB : COR_CONTORNO_RGB;
     for (int k = 0; k < 4; k++) {
         BG_PALETTE_SUB[ICONE_Y_BASE + k] = ICONE_Y_CORES[k];
     }
     BG_PALETTE_SUB[COR_TEXTO_VERMELHO] = COR_VERMELHO_RGB;
+}
+
+static void aplicar_modo_selecao(void)
+{
+    const Imagem *topo = modo_excluir ? &SELECAO_EXCLUIR : &SELECAO_TOPO;
+    dmaCopy(topo->bitmap, bgGetGfxPtr(bgTopo), topo->bitmapLen);
+    dmaCopy(topo->pal, BG_PALETTE, topo->palLen);
+    aplicar_paleta_selecao();
 }
 
 static void voltar_titulo(void)
@@ -350,7 +365,7 @@ static void montar_tela_selecao(int slot_atual)
     }
 
     int altura = achar_secao("PLGC")[9];
-    int y0 = 192 - altura - 8;
+    int y0 = 192 - altura - 8 + rodape_dy;
 
     int largura = largura_texto(TEXTO_DUPLICAR);
     int total = ICONE_LADO + ESPACO_ICONE + largura;
@@ -423,9 +438,31 @@ int main(void)
             break;
 
         case ESTADO_SELECAO_ESPERA: {
+            if (rodape_dy != rodape_alvo) {
+                int diff = rodape_alvo - rodape_dy;
+                if (diff > RODAPE_PASSO) diff = RODAPE_PASSO;
+                if (diff < -RODAPE_PASSO) diff = -RODAPE_PASSO;
+                rodape_dy += diff;
+                montar_tela_selecao(slot_selecionado);
+            }
+
+            if (apertou & KEY_X) {
+                if (!modo_excluir) {
+                    modo_excluir = true;
+                    rodape_alvo = RODAPE_DESCIDA;
+                    aplicar_modo_selecao();
+                }
+            }
+
             if (apertou & KEY_B) {
-                destino = DESTINO_TITULO;
-                estado = ESTADO_SELECAO_SAI;
+                if (modo_excluir) {
+                    modo_excluir = false;
+                    rodape_alvo = 0;
+                    aplicar_modo_selecao();
+                } else {
+                    destino = DESTINO_TITULO;
+                    estado = ESTADO_SELECAO_SAI;
+                }
                 break;
             }
             if (apertou & KEY_A) {
