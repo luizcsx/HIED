@@ -39,7 +39,7 @@ typedef enum {
 #define TECLAS_ESQUERDA (KEY_LEFT | KEY_UP)
 #define TECLAS_DIREITA  (KEY_RIGHT | KEY_DOWN)
 
-#define COR_CONTORNO 1
+#define COR_CONTORNO 2  /* branco: o índice 1 é o verde do fundo e o anel sumia */
 
 static int bgTopo;
 static int bgBaixo;
