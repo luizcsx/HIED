@@ -7,6 +7,7 @@
 #include "SS_screenbg.h"
 #include "SS_screenbgB.h"
 #include "Button_template.h"
+#include "SS_screenbg_selXbtn.h"
 
 extern const u8 _binary_fonts_heloFont_NFTR_start[];
 
