@@ -8,9 +8,9 @@
 #include "SS_screenbgB.h"
 #include "Button_template.h"
 
-extern const u8 _binary_fonts_testFont007_UTF8_NFTR_start[];
+extern const u8 _binary_fonts_heloFont_NFTR_start[];
 
-static const u8 *const FONTE = _binary_fonts_testFont007_UTF8_NFTR_start;
+static const u8 *const FONTE = _binary_fonts_heloFont_NFTR_start;
 
 typedef struct {
     const void *bitmap;
