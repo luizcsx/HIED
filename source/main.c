@@ -49,7 +49,7 @@ typedef enum {
 #define COR_TEXTO_PREENCHIMENTO 16
 #define COR_TEXTO_CONTORNO      2
 
-#define TEXTO_INFERIOR "Duplicar"
+#define TEXTO_INFERIOR "DUPLICAR"
 #define ICONE_Y_BASE 240
 #define ICONE_LADO 13
 #define ESPACO_ICONE 4
