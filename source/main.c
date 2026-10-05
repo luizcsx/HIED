@@ -40,7 +40,7 @@ typedef enum {
 #define TECLAS_DIREITA  (KEY_RIGHT | KEY_DOWN)
 
 #define COR_CONTORNO 255
-#define COR_CONTORNO_RGB RGB15(2, 4, 0)  
+#define COR_CONTORNO_RGB RGB15(22, 16, 6)
 
 static int bgTopo;
 static int bgBaixo;
