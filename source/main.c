@@ -8,9 +8,9 @@
 #include "SS_screenbgB.h"
 #include "Button_template.h"
 
-extern const u8 _binary_fonts_heloFont_NFTR_start[];
+extern const u8 _binary_fonts_testFont007_UTF8_NFTR_start[];
 
-static const u8 *const FONTE = _binary_fonts_heloFont_NFTR_start;
+static const u8 *const FONTE = _binary_fonts_testFont007_UTF8_NFTR_start;
 
 typedef struct {
     const void *bitmap;
@@ -50,6 +50,26 @@ typedef enum {
 #define COR_TEXTO_CONTORNO      2
 
 #define TEXTO_INFERIOR "Duplicar"
+#define ICONE_Y_BASE 240
+#define ICONE_LADO 13
+#define ESPACO_ICONE 4
+
+static const u8 ICONE_Y[13 * 13] = {
+    0, 0, 0, 0, 240, 240, 240, 240, 242, 0, 0, 0, 0,
+    0, 0, 242, 240, 240, 240, 240, 240, 240, 240, 242, 0, 0,
+    0, 242, 240, 240, 240, 240, 240, 240, 240, 240, 240, 0, 0,
+    0, 240, 240, 240, 243, 240, 240, 240, 243, 240, 240, 240, 0,
+    240, 240, 240, 240, 241, 240, 240, 243, 241, 240, 240, 240, 242,
+    240, 240, 240, 240, 240, 241, 240, 241, 240, 240, 240, 240, 242,
+    240, 240, 240, 240, 240, 240, 241, 240, 240, 240, 240, 240, 242,
+    240, 240, 240, 240, 240, 242, 241, 240, 240, 240, 240, 240, 242,
+    240, 240, 240, 240, 240, 242, 241, 240, 240, 240, 240, 240, 242,
+    0, 240, 240, 240, 240, 240, 243, 240, 240, 240, 240, 240, 0,
+    0, 242, 240, 240, 240, 240, 240, 240, 240, 240, 240, 242, 0,
+    0, 0, 242, 240, 240, 240, 240, 240, 240, 242, 242, 0, 0,
+    0, 0, 0, 0, 242, 242, 242, 242, 242, 0, 0, 0, 0
+};
+static const u16 ICONE_Y_CORES[4] = { 8456, 32767, 0, 21140 };
 
 static int bgTopo;
 static int bgBaixo;
@@ -267,6 +287,32 @@ static void desenhar_botao(int cx, int cy)
     }
 }
 
+static void desenhar_icone(int x, int y, const u8 *icone)
+{
+    for (int lin = 0; lin < ICONE_LADO; lin++) {
+        for (int col = 0; col < ICONE_LADO; col++) {
+            u8 v = icone[lin * ICONE_LADO + col];
+            if (v) plotar(x + col, y + lin, v);
+        }
+    }
+}
+
+static void aplicar_paleta_selecao(void)
+{
+    BG_PALETTE_SUB[COR_CONTORNO] = COR_CONTORNO_RGB;
+    for (int k = 0; k < 4; k++) {
+        BG_PALETTE_SUB[ICONE_Y_BASE + k] = ICONE_Y_CORES[k];
+    }
+}
+
+static void voltar_titulo(void)
+{
+    mostrar_telas(&TITULO_TOPO, &TITULO_BAIXO);
+    nivel = FADE_MIN;
+    quadro_fade = 0;
+    setBrightness(3, nivel);
+}
+
 static void montar_tela_selecao(int slot_atual)
 {
     memcpy(telaBaixoBuf, SS_screenbgBBitmap, sizeof(telaBaixoBuf));
@@ -280,7 +326,11 @@ static void montar_tela_selecao(int slot_atual)
 
     int altura = achar_secao("PLGC")[9];
     int largura = largura_texto(TEXTO_INFERIOR);
-    desenhar_texto(256 - largura - 8, 192 - altura - 8, TEXTO_INFERIOR);
+    int total = ICONE_LADO + ESPACO_ICONE + largura;
+    int x0 = 256 - total - 8;
+    int y0 = 192 - altura - 8;
+    desenhar_icone(x0, y0, ICONE_Y);
+    desenhar_texto(x0 + ICONE_LADO + ESPACO_ICONE, y0, TEXTO_INFERIOR);
 
     dmaCopy(telaBaixoBuf, bgGetGfxPtr(bgBaixo), sizeof(telaBaixoBuf));
 }
@@ -319,7 +369,7 @@ int main(void)
                 dmaCopy(SELECAO_TOPO.bitmap, bgGetGfxPtr(bgTopo), SELECAO_TOPO.bitmapLen);
                 dmaCopy(SELECAO_TOPO.pal, BG_PALETTE, SELECAO_TOPO.palLen);
                 dmaCopy(SELECAO_BAIXO.pal, BG_PALETTE_SUB, SELECAO_BAIXO.palLen);
-                BG_PALETTE_SUB[COR_CONTORNO] = COR_CONTORNO_RGB;
+                aplicar_paleta_selecao();
                 montar_tela_selecao(slot_selecionado);
                 estado = ESTADO_SELECAO_ENTRA;
             }
@@ -332,6 +382,12 @@ int main(void)
             break;
 
         case ESTADO_SELECAO_ESPERA: {
+            if (apertou & KEY_B) {
+                voltar_titulo();
+                estado = ESTADO_TITULO_ENTRA;
+                break;
+            }
+
             int toque_slot = slot_tocado();
             bool mudou = false;
 
