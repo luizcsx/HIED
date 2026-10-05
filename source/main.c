@@ -221,7 +221,10 @@ static const Ponto SLOTS[3] = {
     { 212, 60 }
 };
 
-#define SLOT_RAIO 32
+#define SLOT_RAIO 40
+#define BOTAO_LADO 80
+#define BOTAO_METADE 40
+#define ANEL_RAIO 44
 
 static int slot_tocado(void)
 {
@@ -254,11 +257,11 @@ static void desenhar_anel(int cx, int cy, int raio, u8 indice, int espessura)
 static void desenhar_botao(int cx, int cy)
 {
     const u8 *src = (const u8 *)Button_templateBitmap;
-    for (int y = 0; y < 64; y++) {
-        for (int x = 0; x < 64; x++) {
-            u8 indice = src[y * 64 + x];
+    for (int y = 0; y < BOTAO_LADO; y++) {
+        for (int x = 0; x < BOTAO_LADO; x++) {
+            u8 indice = src[y * BOTAO_LADO + x];
             if (indice != 0) {
-                plotar(cx - 32 + x, cy - 32 + y, indice);
+                plotar(cx - BOTAO_METADE + x, cy - BOTAO_METADE + y, indice);
             }
         }
     }
@@ -271,7 +274,7 @@ static void montar_tela_selecao(int slot_atual)
     for (int i = 0; i < 3; i++) {
         desenhar_botao(SLOTS[i].x, SLOTS[i].y);
         if (i == slot_atual) {
-            desenhar_anel(SLOTS[i].x, SLOTS[i].y, 34, COR_CONTORNO, 2);
+            desenhar_anel(SLOTS[i].x, SLOTS[i].y, ANEL_RAIO, COR_CONTORNO, 2);
         }
     }
 
