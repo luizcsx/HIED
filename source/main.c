@@ -49,7 +49,10 @@ typedef enum {
 #define COR_TEXTO_PREENCHIMENTO 16
 #define COR_TEXTO_CONTORNO      2
 
-#define TEXTO_INFERIOR "DUPLICAR"
+#define TEXTO_DUPLICAR "DUPLICAR"
+#define TEXTO_APAGAR "APAGAR"
+#define COR_TEXTO_VERMELHO 244
+#define COR_VERMELHO_RGB RGB15(27, 5, 5)
 #define ICONE_Y_BASE 240
 #define ICONE_LADO 13
 #define ESPACO_ICONE 4
@@ -70,6 +73,21 @@ static const u8 ICONE_Y[13 * 13] = {
     0, 0, 0, 0, 242, 242, 242, 242, 242, 0, 0, 0, 0
 };
 static const u16 ICONE_Y_CORES[4] = { 8456, 32767, 0, 21140 };
+static const u8 ICONE_X[13 * 13] = {
+    242, 242, 0, 0, 0, 0, 0, 0, 0, 0, 0, 242, 242,
+    0, 240, 243, 0, 0, 0, 0, 0, 0, 0, 243, 240, 0,
+    0, 242, 240, 243, 0, 0, 0, 0, 0, 243, 240, 242, 0,
+    0, 0, 242, 240, 240, 0, 0, 0, 240, 240, 242, 0, 0,
+    0, 0, 0, 243, 240, 243, 0, 243, 240, 243, 0, 0, 0,
+    0, 0, 0, 0, 242, 240, 240, 240, 242, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 243, 240, 243, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 242, 240, 240, 240, 242, 0, 0, 0, 0,
+    0, 0, 0, 243, 240, 243, 0, 243, 240, 243, 0, 0, 0,
+    0, 0, 242, 240, 240, 0, 0, 0, 240, 240, 242, 0, 0,
+    0, 242, 240, 243, 0, 0, 0, 0, 0, 243, 240, 242, 0,
+    0, 240, 243, 0, 0, 0, 0, 0, 0, 0, 243, 240, 0,
+    242, 242, 0, 0, 0, 0, 0, 0, 0, 0, 0, 242, 242
+};
 
 static int bgTopo;
 static int bgBaixo;
@@ -168,9 +186,9 @@ static int largura_texto(const char *txt)
     return total;
 }
 
-static void desenhar_texto(int x, int y, const char *txt)
+static void desenhar_texto(int x, int y, const char *txt, u8 preenchimento, u8 contorno)
 {
-    static const u8 CORES[4] = { 0, COR_TEXTO_PREENCHIMENTO, COR_TEXTO_CONTORNO, 0 };
+    const u8 CORES[4] = { 0, preenchimento, contorno, 0 };
     const u8 *pl = achar_secao("PLGC") + 8;
     int larg = pl[0];
     int alt  = pl[1];
@@ -303,6 +321,7 @@ static void aplicar_paleta_selecao(void)
     for (int k = 0; k < 4; k++) {
         BG_PALETTE_SUB[ICONE_Y_BASE + k] = ICONE_Y_CORES[k];
     }
+    BG_PALETTE_SUB[COR_TEXTO_VERMELHO] = COR_VERMELHO_RGB;
 }
 
 static void voltar_titulo(void)
@@ -325,12 +344,16 @@ static void montar_tela_selecao(int slot_atual)
     }
 
     int altura = achar_secao("PLGC")[9];
-    int largura = largura_texto(TEXTO_INFERIOR);
+    int y0 = 192 - altura - 8;
+
+    int largura = largura_texto(TEXTO_DUPLICAR);
     int total = ICONE_LADO + ESPACO_ICONE + largura;
     int x0 = 256 - total - 8;
-    int y0 = 192 - altura - 8;
     desenhar_icone(x0, y0, ICONE_Y);
-    desenhar_texto(x0 + ICONE_LADO + ESPACO_ICONE, y0, TEXTO_INFERIOR);
+    desenhar_texto(x0 + ICONE_LADO + ESPACO_ICONE, y0, TEXTO_DUPLICAR, COR_TEXTO_PREENCHIMENTO, COR_TEXTO_CONTORNO);
+
+    desenhar_icone(8, y0, ICONE_X);
+    desenhar_texto(8 + ICONE_LADO + ESPACO_ICONE, y0, TEXTO_APAGAR, COR_TEXTO_VERMELHO, COR_TEXTO_CONTORNO);
 
     dmaCopy(telaBaixoBuf, bgGetGfxPtr(bgBaixo), sizeof(telaBaixoBuf));
 }
