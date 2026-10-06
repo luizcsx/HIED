@@ -8,6 +8,7 @@
 #include "SS_screenbgB.h"
 #include "Button_template.h"
 #include "SS_screenbg_selXbtn.h"
+#include "SS_screenbg_selYbtn.h"
 
 extern const u8 _binary_fonts_heloFont_NFTR_start[];
 
@@ -27,6 +28,7 @@ static const Imagem TITULO_BAIXO  = IMAGEM(HIED_screenB);
 static const Imagem SELECAO_TOPO  = IMAGEM(SS_screenbg);
 static const Imagem SELECAO_BAIXO = IMAGEM(SS_screenbgB);
 static const Imagem SELECAO_EXCLUIR = IMAGEM(SS_screenbg_selXbtn);
+static const Imagem SELECAO_DUPLICAR = IMAGEM(SS_screenbg_selYbtn);
 
 typedef enum {
     ESTADO_TITULO_ENTRA,
@@ -43,6 +45,12 @@ typedef enum {
     DESTINO_SELECAO
 } Destino;
 
+typedef enum {
+    MODO_NORMAL,
+    MODO_EXCLUIR,
+    MODO_DUPLICAR
+} Modo;
+
 #define FADE_MIN   (-16)
 #define FADE_MAX   0
 #define FADE_PASSO 2
@@ -54,6 +62,7 @@ typedef enum {
 #define COR_CONTORNO 255
 #define COR_CONTORNO_RGB RGB15(22, 16, 6)
 #define COR_CONTORNO_EXCLUIR_RGB RGB15(15, 5, 5)
+#define COR_CONTORNO_DUPLICAR_RGB RGB15(19, 0, 31)
 #define RODAPE_DESCIDA 40
 #define RODAPE_PASSO 4
 
@@ -104,7 +113,7 @@ static int bgTopo;
 static int bgBaixo;
 static int nivel       = FADE_MIN;
 static int quadro_fade = 0;
-static bool modo_excluir = false;
+static Modo modo = MODO_NORMAL;
 static int rodape_dy = 0;
 static int rodape_alvo = 0;
 
@@ -329,9 +338,16 @@ static void desenhar_icone(int x, int y, const u8 *icone)
     }
 }
 
+static u16 cor_contorno_do_modo(void)
+{
+    if (modo == MODO_EXCLUIR) return COR_CONTORNO_EXCLUIR_RGB;
+    if (modo == MODO_DUPLICAR) return COR_CONTORNO_DUPLICAR_RGB;
+    return COR_CONTORNO_RGB;
+}
+
 static void aplicar_paleta_selecao(void)
 {
-    BG_PALETTE_SUB[COR_CONTORNO] = modo_excluir ? COR_CONTORNO_EXCLUIR_RGB : COR_CONTORNO_RGB;
+    BG_PALETTE_SUB[COR_CONTORNO] = cor_contorno_do_modo();
     for (int k = 0; k < 4; k++) {
         BG_PALETTE_SUB[ICONE_Y_BASE + k] = ICONE_Y_CORES[k];
     }
@@ -340,7 +356,9 @@ static void aplicar_paleta_selecao(void)
 
 static void aplicar_modo_selecao(void)
 {
-    const Imagem *topo = modo_excluir ? &SELECAO_EXCLUIR : &SELECAO_TOPO;
+    const Imagem *topo = &SELECAO_TOPO;
+    if (modo == MODO_EXCLUIR) topo = &SELECAO_EXCLUIR;
+    if (modo == MODO_DUPLICAR) topo = &SELECAO_DUPLICAR;
     dmaCopy(topo->bitmap, bgGetGfxPtr(bgTopo), topo->bitmapLen);
     dmaCopy(topo->pal, BG_PALETTE, topo->palLen);
     aplicar_paleta_selecao();
@@ -447,17 +465,22 @@ int main(void)
                 montar_tela_selecao(slot_selecionado);
             }
 
-            if (apertou & KEY_X) {
-                if (!modo_excluir) {
-                    modo_excluir = true;
+            bool pediu_x = (apertou & KEY_X) != 0;
+            bool pediu_y = (apertou & KEY_Y) != 0;
+
+            if ((pediu_x || pediu_y) && !(pediu_x && pediu_y)) {
+                Modo alvo = pediu_x ? MODO_EXCLUIR : MODO_DUPLICAR;
+                if (modo != alvo) {
+                    modo = alvo;
                     rodape_alvo = RODAPE_DESCIDA;
                     aplicar_modo_selecao();
                 }
+                break;
             }
 
             if (apertou & KEY_B) {
-                if (modo_excluir) {
-                    modo_excluir = false;
+                if (modo != MODO_NORMAL) {
+                    modo = MODO_NORMAL;
                     rodape_alvo = 0;
                     aplicar_modo_selecao();
                 } else {
