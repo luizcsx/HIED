@@ -1,4 +1,4 @@
-#include "comum.h"
+#include "common.h"
 
 int bgTopo;
 int bgBaixo;
