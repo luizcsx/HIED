@@ -1,4 +1,5 @@
 #include "menuLdd.h"
+#include "salvar.h"
 #include "SS_screenbg.h"
 #include "SS_screenbgB.h"
 #include "Button_template.h"
@@ -357,6 +358,9 @@ static void menu_espera(u32 apertou)
     }
 
     if (apertou & KEY_A) {
+        if (salvar_progresso(slot_selecionado) == 0) {
+            salvar_definir_progresso(slot_selecionado, 1);
+        }
         destino = DESTINO_SELECAO;
         estado_menu = MENU_SAI;
         return;
