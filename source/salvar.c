@@ -1,12 +1,12 @@
 #include "salvar.h"
 #include <string.h>
 
-#define SRAM_BASE ((volatile u8 *)0x0A000000)
 #define SAVE_TAM 9
 #define SAVE_VERSAO 1
 #define SAVE_SLOT_INICIO 5
 
 static u8 cache[SAVE_TAM];
+static int tipo_chip = -1;
 
 static u8 soma_checksum(void)
 {
@@ -22,19 +22,30 @@ static bool valido(void)
     return cache[8] == soma_checksum();
 }
 
+static bool chip_gravavel(void)
+{
+    return tipo_chip == 1 || tipo_chip == 2;
+}
+
 static void gravar(void)
 {
     cache[8] = soma_checksum();
-    for (int i = 0; i < SAVE_TAM; i++) {
-        SRAM_BASE[i] = cache[i];
+    if (chip_gravavel()) {
+        cardWriteEeprom(0, cache, SAVE_TAM, tipo_chip);
     }
 }
 
 void salvar_iniciar(void)
 {
-    for (int i = 0; i < SAVE_TAM; i++) {
-        cache[i] = SRAM_BASE[i];
+    sysSetCardOwner(true);
+    tipo_chip = cardEepromGetType();
+
+    if (chip_gravavel()) {
+        cardReadEeprom(0, cache, SAVE_TAM, tipo_chip);
+    } else {
+        memset(cache, 0, sizeof(cache));
     }
+
     if (!valido()) {
         memset(cache, 0, sizeof(cache));
         cache[0] = 'H';
