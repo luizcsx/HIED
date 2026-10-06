@@ -56,7 +56,7 @@ OBJS      := $(patsubst $(SOURCES)/%.c,$(BUILD)/%.o,$(CFILES)) \
 all: $(TARGET).nds
 
 $(TARGET).nds: $(BUILD)/$(TARGET).elf $(GAME_ICON)
-	LC_ALL=C.UTF-8 ndstool -c $@ -9 $< $(ARM7ARG) -b $(GAME_ICON) "$(GAME_TITLE);$(GAME_SUBTITLE1);$(GAME_SUBTITLE2)"
+	LC_ALL=C.UTF-8 ndstool -c $@ -9 $< $(ARM7ARG) -b $(GAME_ICON) "$(GAME_TITLE);$(GAME_SUBTITLE1);$(GAME_SUBTITLE2)" -g HIED 00 "ENTRELINHAS"
 
 $(BUILD)/$(TARGET).elf: $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) $(LIBS) -o $@
@@ -81,7 +81,7 @@ variantes: $(BUILD)/$(TARGET).elf $(GAME_ICON)
 	@for a in $(ARM7_TODOS); do \
 	  n=$$(basename $$a .elf); \
 	  echo "ROM de teste com o ARM7 $$n"; \
-	  LC_ALL=C.UTF-8 ndstool -c $(BUILD)/variantes/$(TARGET)_$$n.nds -9 $< -7 $$a -b $(GAME_ICON) "$(GAME_TITLE);$(GAME_SUBTITLE1);$(GAME_SUBTITLE2)" || true; \
+	  LC_ALL=C.UTF-8 ndstool -c $(BUILD)/variantes/$(TARGET)_$$n.nds -9 $< -7 $$a -b $(GAME_ICON) "$(GAME_TITLE);$(GAME_SUBTITLE1);$(GAME_SUBTITLE2)" -g HIED 00 "ENTRELINHAS" || true; \
 	done
 	@ls -la $(BUILD)/variantes
 
