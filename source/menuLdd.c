@@ -84,6 +84,7 @@ static const u8 ICONE_X[13 * 13] = {
     0, 240, 243, 0, 0, 0, 0, 0, 0, 0, 243, 240, 0,
     242, 242, 0, 0, 0, 0, 0, 0, 0, 0, 0, 242, 242
 };
+static const u16 ICONE_X_CORES[4] = { 8456, 32767, 0, 21140 }; 
 
 static u8 telaBaixoBuf[256 * 192];
 static Modo modo = MODO_NORMAL;
