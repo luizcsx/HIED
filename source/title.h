@@ -1,6 +1,6 @@
 #pragma once
 
-#include "comum.h"
+#include "common.h"
 
 typedef enum {
     TITULO_EM_ANDAMENTO,
