@@ -10,6 +10,7 @@ BUILD   := build
 SOURCES := source
 GFX     := gfx
 FONTS   := fonts
+AUDIO   := audio
 
 GAME_TITLE     := HELOISA & ISABELA
 GAME_SUBTITLE1 := Entrelinhas do Destino
@@ -39,16 +40,18 @@ CFLAGS  := -g -Wall -O2 -fomit-frame-pointer -ffast-math $(ARCH) \
            -specs=$(SPECS) -D__NDS__ -D__ARM9__ -DARM9 \
            -I$(LIBNDS)/include -I$(CALICO)/include -I$(BUILD)
 LDFLAGS := -specs=$(SPECS) -g $(ARCH) -Wl,-Map,$(BUILD)/$(TARGET).map
-LIBS    := -L$(LIBNDS)/lib -L$(CALICO)/lib -lnds9 -lcalico_ds9
+LIBS    := -L$(LIBNDS)/lib -L$(CALICO)/lib -lnds9 -lcalico_ds9 -lmm9
 
-CFILES    := $(wildcard $(SOURCES)/*.c)
-PNGFILES  := $(wildcard $(GFX)/*.png)
-FONTFILES := $(wildcard $(FONTS)/*.NFTR)
-GFXHDRS   := $(patsubst $(GFX)/%.png,$(BUILD)/%.h,$(PNGFILES))
-FONTOBJS  := $(patsubst $(FONTS)/%.NFTR,$(BUILD)/%.nftr.o,$(FONTFILES))
-OBJS      := $(patsubst $(SOURCES)/%.c,$(BUILD)/%.o,$(CFILES)) \
-             $(patsubst $(GFX)/%.png,$(BUILD)/%.o,$(PNGFILES)) \
-             $(FONTOBJS)
+CFILES     := $(wildcard $(SOURCES)/*.c)
+PNGFILES   := $(wildcard $(GFX)/*.png)
+FONTFILES  := $(wildcard $(FONTS)/*.NFTR)
+AUDIOFILES := $(wildcard $(AUDIO)/*.wav $(AUDIO)/*.mod $(AUDIO)/*.xm $(AUDIO)/*.it $(AUDIO)/*.s3m)
+GFXHDRS    := $(patsubst $(GFX)/%.png,$(BUILD)/%.h,$(PNGFILES))
+FONTOBJS   := $(patsubst $(FONTS)/%.NFTR,$(BUILD)/%.nftr.o,$(FONTFILES))
+OBJS       := $(patsubst $(SOURCES)/%.c,$(BUILD)/%.o,$(CFILES)) \
+              $(patsubst $(GFX)/%.png,$(BUILD)/%.o,$(PNGFILES)) \
+              $(FONTOBJS) \
+              $(BUILD)/soundbank.bin.o
 
 .SECONDARY:
 .PHONY: all clean variantes
@@ -65,6 +68,12 @@ $(BUILD)/%.o: $(SOURCES)/%.c $(GFXHDRS) | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD)/%.nftr.o: $(FONTS)/%.NFTR | $(BUILD)
+	$(OBJCOPY) -I binary -O elf32-littlearm -B arm $< $@
+
+$(BUILD)/soundbank.bin $(BUILD)/soundbank.h: $(AUDIOFILES) | $(BUILD)
+	mmutil -d $(AUDIOFILES) -o$(BUILD)/soundbank.bin -h$(BUILD)/soundbank.h
+
+$(BUILD)/soundbank.bin.o: $(BUILD)/soundbank.bin
 	$(OBJCOPY) -I binary -O elf32-littlearm -B arm $< $@
 
 $(BUILD)/%.o: $(BUILD)/%.s
