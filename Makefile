@@ -64,7 +64,7 @@ $(TARGET).nds: $(BUILD)/$(TARGET).elf $(GAME_ICON)
 $(BUILD)/$(TARGET).elf: $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) $(LIBS) -o $@
 
-$(BUILD)/%.o: $(SOURCES)/%.c $(GFXHDRS) | $(BUILD)
+$(BUILD)/%.o: $(SOURCES)/%.c $(GFXHDRS) $(BUILD)/soundbank.h | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD)/%.nftr.o: $(FONTS)/%.NFTR | $(BUILD)
