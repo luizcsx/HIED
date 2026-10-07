@@ -40,7 +40,7 @@ CFLAGS  := -g -Wall -O2 -fomit-frame-pointer -ffast-math $(ARCH) \
            -specs=$(SPECS) -D__NDS__ -D__ARM9__ -DARM9 \
            -I$(LIBNDS)/include -I$(CALICO)/include -I$(BUILD)
 LDFLAGS := -specs=$(SPECS) -g $(ARCH) -Wl,-Map,$(BUILD)/$(TARGET).map
-LIBS    := -L$(LIBNDS)/lib -L$(CALICO)/lib -lnds9 -lcalico_ds9 -lmm9
+LIBS    := -L$(LIBNDS)/lib -L$(CALICO)/lib -lnds9 -lcalico_ds9 -lcalico_sound9 -lmm9
 
 CFILES     := $(wildcard $(SOURCES)/*.c)
 PNGFILES   := $(wildcard $(GFX)/*.png)
