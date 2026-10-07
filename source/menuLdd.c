@@ -1,4 +1,5 @@
 #include "menuLdd.h"
+#include "audio.h"
 #include "salvar.h"
 #include "SS_screenbg.h"
 #include "SS_screenbgB.h"
@@ -23,7 +24,7 @@ typedef enum {
 
 typedef enum {
     DESTINO_TITULO,
-    DESTINO_SELECAO
+    DESTINO_CENA
 } Destino;
 
 typedef enum {
@@ -70,19 +71,19 @@ static const u8 ICONE_Y[13 * 13] = {
 };
 static const u16 ICONE_Y_CORES[4] = { 8456, 32767, 0, 21140 };
 static const u8 ICONE_X[13 * 13] = {
-    0, 0, 0, 0, 0, 240, 240, 240, 242, 0, 0, 0, 0,
-    0, 0, 0, 240, 240, 240, 240, 240, 240, 240, 242, 0, 0,
-    0, 0, 240, 240, 240, 240, 240, 240, 240, 240, 240, 242, 0,
-    0, 240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 0,
-    0, 240, 240, 240, 240, 241, 240, 243, 241, 240, 240, 240, 242,
-    242, 240, 240, 240, 240, 243, 241, 241, 240, 240, 240, 240, 240,
-    240, 240, 240, 240, 240, 240, 241, 243, 240, 240, 240, 240, 240,
-    242, 240, 240, 240, 240, 243, 241, 241, 240, 240, 240, 240, 242,
-    0, 240, 240, 240, 240, 241, 240, 240, 241, 240, 240, 240, 242,
-    0, 240, 240, 240, 240, 240, 240, 240, 243, 240, 240, 240, 0,
-    0, 0, 240, 240, 240, 240, 240, 240, 240, 240, 240, 242, 0,
-    0, 0, 0, 240, 240, 240, 240, 240, 240, 240, 242, 0, 0,
-    0, 0, 0, 0, 242, 242, 242, 242, 242, 0, 0, 0, 0,
+    242, 242, 0, 0, 0, 0, 0, 0, 0, 0, 0, 242, 242,
+    0, 240, 243, 0, 0, 0, 0, 0, 0, 0, 243, 240, 0,
+    0, 242, 240, 243, 0, 0, 0, 0, 0, 243, 240, 242, 0,
+    0, 0, 242, 240, 240, 0, 0, 0, 240, 240, 242, 0, 0,
+    0, 0, 0, 243, 240, 243, 0, 243, 240, 243, 0, 0, 0,
+    0, 0, 0, 0, 242, 240, 240, 240, 242, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 243, 240, 243, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 242, 240, 240, 240, 242, 0, 0, 0, 0,
+    0, 0, 0, 243, 240, 243, 0, 243, 240, 243, 0, 0, 0,
+    0, 0, 242, 240, 240, 0, 0, 0, 240, 240, 242, 0, 0,
+    0, 242, 240, 243, 0, 0, 0, 0, 0, 243, 240, 242, 0,
+    0, 240, 243, 0, 0, 0, 0, 0, 0, 0, 243, 240, 0,
+    242, 242, 0, 0, 0, 0, 0, 0, 0, 0, 0, 242, 242
 };
 
 static u8 telaBaixoBuf[256 * 192];
@@ -361,7 +362,7 @@ static void menu_espera(u32 apertou)
         if (salvar_progresso(slot_selecionado) == 0) {
             salvar_definir_progresso(slot_selecionado, 1);
         }
-        destino = DESTINO_SELECAO;
+        destino = DESTINO_CENA;
         estado_menu = MENU_SAI;
         return;
     }
@@ -381,6 +382,7 @@ static void menu_espera(u32 apertou)
     }
 
     if (mudou) {
+        audio_tocar_escolha();
         montar_tela_selecao(slot_selecionado);
     }
 }
@@ -416,9 +418,14 @@ MenuResultado menu_passo(u32 apertou)
             if (destino == DESTINO_TITULO) {
                 return MENU_VOLTAR_TITULO;
             }
-            estado_menu = MENU_ENTRA;
+            return MENU_ABRIR_CENA;
         }
         break;
     }
     return MENU_EM_ANDAMENTO;
+}
+
+int menu_slot_escolhido(void)
+{
+    return slot_selecionado;
 }
