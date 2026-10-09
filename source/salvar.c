@@ -4,6 +4,7 @@
 #define SAVE_TAM 9
 #define SAVE_VERSAO 1
 #define SAVE_SLOT_INICIO 5
+#define SALVAR_GRAVAR_HARDWARE 0
 
 static u8 cache[SAVE_TAM];
 static int tipo_chip = -1;
@@ -24,7 +25,7 @@ static bool valido(void)
 
 static bool chip_gravavel(void)
 {
-    return tipo_chip == 1 || tipo_chip == 2;
+    return SALVAR_GRAVAR_HARDWARE && (tipo_chip == 1 || tipo_chip == 2);
 }
 
 static void gravar(void)
