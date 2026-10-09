@@ -40,7 +40,7 @@ CFLAGS  := -g -Wall -O2 -fomit-frame-pointer -ffast-math $(ARCH) \
            -specs=$(SPECS) -D__NDS__ -D__ARM9__ -DARM9 \
            -I$(LIBNDS)/include -I$(CALICO)/include -I$(BUILD)
 LDFLAGS := -specs=$(SPECS) -g $(ARCH) -Wl,-Map,$(BUILD)/$(TARGET).map
-LIBS    := -L$(LIBNDS)/lib -L$(CALICO)/lib -lmm9 -lnds9 -lcalico_ds9 -lnds9
+LIBS    := -L$(LIBNDS)/lib -L$(CALICO)/lib -Wl,--start-group -lnds9 -lcalico_ds9 -lmm9 -Wl,--end-group
 
 CFILES     := $(wildcard $(SOURCES)/*.c)
 PNGFILES   := $(wildcard $(GFX)/*.png)
@@ -51,7 +51,7 @@ FONTOBJS   := $(patsubst $(FONTS)/%.NFTR,$(BUILD)/%.nftr.o,$(FONTFILES))
 OBJS       := $(patsubst $(SOURCES)/%.c,$(BUILD)/%.o,$(CFILES)) \
               $(patsubst $(GFX)/%.png,$(BUILD)/%.o,$(PNGFILES)) \
               $(FONTOBJS) \
-              $(BUILD)/soundbank.bin.o
+              $(BUILD)/soundbank_data.o
 
 .SECONDARY:
 .PHONY: all clean variantes
@@ -73,8 +73,8 @@ $(BUILD)/%.nftr.o: $(FONTS)/%.NFTR | $(BUILD)
 $(BUILD)/soundbank.bin $(BUILD)/soundbank.h: $(AUDIOFILES) | $(BUILD)
 	mmutil -d $(AUDIOFILES) -o$(BUILD)/soundbank.bin -h$(BUILD)/soundbank.h
 
-$(BUILD)/soundbank.bin.o: $(BUILD)/soundbank.bin
-	$(OBJCOPY) -I binary -O elf32-littlearm -B arm $< $@
+$(BUILD)/soundbank_data.o: $(SOURCES)/soundbank_data.s $(BUILD)/soundbank.bin | $(BUILD)
+	$(CC) $(ARCH) -x assembler-with-cpp -c $< -o $@
 
 $(BUILD)/%.o: $(BUILD)/%.s
 	$(CC) $(ARCH) -x assembler-with-cpp -c $< -o $@
