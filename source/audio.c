@@ -8,12 +8,13 @@ static bool pronto = false;
 
 void audio_iniciar(void)
 {
-    pronto = mmInitDefaultMem((mm_addr)_binary_build_soundbank_bin_start);
+    mmInitDefaultMem((mm_addr)_binary_build_soundbank_bin_start);
+    pronto = true;
 }
 
 void audio_tocar_escolha(void)
 {
     if (pronto) {
-        mmEffect(SFX_NAVIGATION_BUTTON);
+        mmEffect(SFX_CHOOSE_BUTTON);
     }
 }
