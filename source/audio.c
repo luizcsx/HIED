@@ -15,6 +15,6 @@ void audio_iniciar(void)
 void audio_tocar_escolha(void)
 {
     if (pronto) {
-        mmEffect(SFX_CHOOSE_BUTTON);
+        mmEffect(SFX_NAVIGATION_BUTTON);
     }
 }
