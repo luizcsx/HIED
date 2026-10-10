@@ -2,7 +2,6 @@
 #include "title.h"
 #include "menuLdd.h"
 #include "salvar.h"
-#include "audio.h"
 
 typedef enum {
     ESTADO_TITULO,
@@ -13,7 +12,6 @@ int main(void)
 {
     iniciar_video();
     salvar_iniciar();
-    audio_iniciar();
     titulo_iniciar();
 
     Estado estado = ESTADO_TITULO;
