@@ -12,6 +12,7 @@ int main(void)
 {
     iniciar_video();
     salvar_iniciar();
+    audio_iniciar();
     titulo_iniciar();
 
     Estado estado = ESTADO_TITULO;
