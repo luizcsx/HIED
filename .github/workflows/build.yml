@@ -41,6 +41,29 @@ jobs:
       - name: Gerar variantes com cada ARM7 (para achar o que suporta Maxmod)
         run: make variantes
 
+      - name: Baixar e compilar o exemplo oficial de Maxmod (para comparar)
+        shell: bash
+        run: |
+          set -e
+          git clone --depth 1 https://github.com/devkitPro/nds-examples.git /tmp/nds-examples
+          cd /tmp/nds-examples/audio/maxmod/basic_sound
+          echo "--- Conteúdo do exemplo oficial ---"
+          find . -maxdepth 2 -type f
+          echo "--- Makefile do exemplo oficial ---"
+          cat Makefile
+          echo "--- Compilando exemplo oficial ---"
+          make
+          echo "--- Resultado ---"
+          find . -name "*.nds"
+
+      - name: Guardar o exemplo oficial compilado
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: exemplo-oficial-maxmod
+          path: /tmp/nds-examples/audio/maxmod/basic_sound/**/*.nds
+          if-no-files-found: warn
+
       - name: Onde ficou o ROM?
         if: always()
         shell: bash
