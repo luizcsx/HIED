@@ -2,6 +2,7 @@
 #include "title.h"
 #include "menuLdd.h"
 #include "salvar.h"
+#include "audio.h"
 
 typedef enum {
     ESTADO_TITULO,
