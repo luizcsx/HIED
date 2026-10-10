@@ -38,14 +38,8 @@ static void gravar(void)
 
 void salvar_iniciar(void)
 {
-    sysSetCardOwner(true);
-    tipo_chip = cardEepromGetType();
-
-    if (chip_gravavel()) {
-        cardReadEeprom(0, cache, SAVE_TAM, tipo_chip);
-    } else {
-        memset(cache, 0, sizeof(cache));
-    }
+    tipo_chip = -1;
+    memset(cache, 0, sizeof(cache));
 
     if (!valido()) {
         memset(cache, 0, sizeof(cache));
