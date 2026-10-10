@@ -7,8 +7,7 @@ static bool pronto = false;
 
 void audio_iniciar(void)
 {
-    soundEnable();
-    pronto = true;
+    pronto = false;
 }
 
 void audio_tocar_escolha(void)
