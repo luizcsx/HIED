@@ -38,6 +38,9 @@ jobs:
       - name: Compilar
         run: make
 
+      - name: Gerar variantes com cada ARM7 (para achar o que suporta Maxmod)
+        run: make variantes
+
       - name: Onde ficou o ROM?
         if: always()
         shell: bash
@@ -65,4 +68,11 @@ jobs:
         with:
           name: rom-nds
           path: "**/*.nds"
+          if-no-files-found: error
+
+      - name: Guardar as variantes (uma ROM por ARM7)
+        uses: actions/upload-artifact@v4
+        with:
+          name: rom-variantes
+          path: "build/variantes/*.nds"
           if-no-files-found: error
