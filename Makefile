@@ -51,7 +51,8 @@ FONTOBJS   := $(patsubst $(FONTS)/%.NFTR,$(BUILD)/%.nftr.o,$(FONTFILES))
 OBJS       := $(patsubst $(SOURCES)/%.c,$(BUILD)/%.o,$(CFILES)) \
               $(patsubst $(GFX)/%.png,$(BUILD)/%.o,$(PNGFILES)) \
               $(FONTOBJS) \
-              $(BUILD)/soundbank_data.o
+              $(BUILD)/soundbank_data.o \
+              $(BUILD)/navigation_button_pcm.o
 
 .SECONDARY:
 .PHONY: all clean variantes
@@ -74,6 +75,9 @@ $(BUILD)/soundbank.bin $(BUILD)/soundbank.h: $(AUDIOFILES) | $(BUILD)
 	mmutil -d $(AUDIOFILES) -o$(BUILD)/soundbank.bin -h$(BUILD)/soundbank.h
 
 $(BUILD)/soundbank_data.o: $(SOURCES)/soundbank_data.s $(BUILD)/soundbank.bin | $(BUILD)
+	$(CC) $(ARCH) -x assembler-with-cpp -c $< -o $@
+
+$(BUILD)/navigation_button_pcm.o: $(SOURCES)/navigation_button_pcm.s $(SOURCES)/navigation_button_pcm.bin | $(BUILD)
 	$(CC) $(ARCH) -x assembler-with-cpp -c $< -o $@
 
 $(BUILD)/%.o: $(BUILD)/%.s
