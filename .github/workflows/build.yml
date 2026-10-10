@@ -64,6 +64,34 @@ jobs:
           path: /tmp/nds-examples/audio/maxmod/basic_sound/**/*.nds
           if-no-files-found: warn
 
+      - name: Inspecionar versoes instaladas (libnds, maxmod, calico, default-arm7)
+        if: always()
+        shell: bash
+        run: |
+          echo "--- Pacotes relacionados via pacman ---"
+          dkp-pacman -Q | grep -iE "libnds|maxmod|calico|arm7|nds-dev|default" || echo "(nenhum encontrado via pacman -Q)"
+          echo
+          echo "--- Todos os pacotes instalados (lista completa) ---"
+          dkp-pacman -Q || true
+          echo
+          echo "--- Conteudo de /opt/devkitpro/calico/lib ---"
+          ls -la /opt/devkitpro/calico/lib 2>/dev/null || echo "(pasta nao existe)"
+          echo
+          echo "--- Conteudo de /opt/devkitpro/libnds/lib ---"
+          ls -la /opt/devkitpro/libnds/lib 2>/dev/null || echo "(pasta nao existe)"
+          echo
+          echo "--- Simbolos relacionados a maxmod/mm dentro de libmm9.a ---"
+          find /opt/devkitpro -iname "libmm9*" -exec sh -c 'echo "== {} =="; "$DEVKITARM/bin/arm-none-eabi-nm" {} 2>/dev/null | grep -i "mmInit\|mmEffect" | head -20' \; || true
+          echo
+          echo "--- Strings 'maxmod' ou 'mm_' dentro dos ARM7 do calico ---"
+          for f in /opt/devkitpro/calico/bin/*.elf; do
+            echo "== $f =="
+            "$DEVKITARM/bin/arm-none-eabi-nm" "$f" 2>/dev/null | grep -i "mm_\|maxmod\|mmSound\|mmMix" | head -10 || echo "(sem simbolos relacionados a maxmod)"
+          done
+          echo
+          echo "--- Buscando qualquer coisa chamada maxmod7 instalada ---"
+          find /opt/devkitpro -iname "*maxmod7*" -o -iname "*mm7*" 2>/dev/null || true
+
       - name: Onde ficou o ROM?
         if: always()
         shell: bash
